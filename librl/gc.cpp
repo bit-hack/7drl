@@ -1,5 +1,7 @@
 #include "gc.h"
 
+namespace librl {
+
 gc_t::gc_t() {
   _bounce = [&](gc_base_t *obj) {
     if (obj) {
@@ -38,9 +40,6 @@ void gc_t::collect() {
   _valid.clear();
 }
 
-void gc_t::collect_step() {
-}
-
 void gc_t::check_in(gc_base_t *obj) {
   _valid.insert(obj);
 }
@@ -51,3 +50,5 @@ gc_t::~gc_t() {
   }
   _allocs.clear();
 }
+
+}  // namespace librl

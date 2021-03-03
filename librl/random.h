@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 
+namespace librl {
 
 inline uint64_t random(uint64_t &seed) {
   seed ^= seed << 13;
@@ -8,3 +9,5 @@ inline uint64_t random(uint64_t &seed) {
   seed ^= seed << 17;
   return seed;
 }
+
+}  // namespace librl

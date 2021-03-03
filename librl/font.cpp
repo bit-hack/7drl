@@ -529,6 +529,7 @@ static const uint8_t cga_font_8x8[512 * 8] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 511
 };
 
+namespace librl {
 
 void font_draw_glyph_8x8(
   uint32_t *dst, const uint32_t pitch, uint16_t ch,
@@ -561,3 +562,5 @@ void font_draw_glyph_8x16(
     dst += pitch;
   }
 }
+
+}  // namespace librl

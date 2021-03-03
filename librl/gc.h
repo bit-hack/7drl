@@ -5,6 +5,9 @@
 #include <list>
 #include <set>
 
+
+namespace librl {
+
 struct gc_base_t;
 
 using gc_enum_t = std::function<void(gc_base_t *)>;
@@ -42,9 +45,6 @@ struct gc_t {
   // invoke a full collection sweep
   void collect();
 
-  // invoke a collection step
-  void collect_step();
-
   // check in a known live object
   void check_in(gc_base_t *);
 
@@ -70,3 +70,5 @@ protected:
   // follow an object and its associates
   void _follow(gc_base_t *obj, std::set<gc_base_t *> &out);
 };
+
+}  // namespace librl
