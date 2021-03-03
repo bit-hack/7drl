@@ -9,5 +9,5 @@ add_library(librl ${LIBRL_SRC})
 target_include_directories(librl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/librl)
 
 file(GLOB GAME_SRC game/*.cpp game/*.h)
-add_library(game ${GAME_SRC})
+add_executable(game ${GAME_SRC})
 target_link_libraries(game librl ${SDL_LIBRARY})

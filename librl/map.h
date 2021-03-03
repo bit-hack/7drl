@@ -38,7 +38,7 @@ struct map_t {
   }
 
   bool is_solid(uint32_t x, uint32_t y) const {
-    return get(x, y) & mask_solid;
+    return (get(x, y) & mask_solid) != 0;
   }
 
   void clear(uint8_t tile) {
