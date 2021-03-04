@@ -1,25 +1,14 @@
 #include "raycast.h"
-#include "map.h"
-#include <utility>
+#include "buffer2d.h"
+#include "common.h"
 
-
-namespace {
-
-template <typename type_t>
-type_t abs(const type_t x) {
-  return (x < 0) ? -x : x;
-}
-
-}  // namespace {}
-
-namespace librl{
-
-struct map_t;
+namespace librl {
 
 bool raycast(
   const uint32_t sx, const uint32_t sy,
   const uint32_t ex, const uint32_t ey,
-  const map_t &map) {
+  const uint8_t mask,
+  const buffer2d_t &map) {
 
   const int32_t incrementX = (ex > sx) ? 1 : -1;
   const int32_t incrementY = (ey > sy) ? 1 : -1;
@@ -34,7 +23,7 @@ bool raycast(
   dy *= 2;
 
   while (steps--) {
-    if (map.is_solid(x, y)) {
+    if (map.get(x, y) & mask) {
       // collision
       return false;
     }
@@ -47,7 +36,6 @@ bool raycast(
       error += dx;
     }
   }
-
   // no collision
   return true;
 }

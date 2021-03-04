@@ -1,7 +1,6 @@
 #pragma once
 #include <cstdint>
 
-
 namespace librl {
 
 void font_draw_glyph_8x8(

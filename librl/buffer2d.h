@@ -6,22 +6,18 @@
 
 namespace librl {
 
-struct map_t {
+struct buffer2d_t {
 
   typedef uint8_t type_t;
 
-  enum {
-    mask_solid = 0x80,
-  };
-
-  map_t(const uint32_t w, const uint32_t h)
+  buffer2d_t(const uint32_t w, const uint32_t h)
     : width(w)
     , height(h)
     , data(new type_t[w * h])
   {
   }
 
-  map_t(const map_t &m)
+  buffer2d_t(const buffer2d_t &m)
     : width(m.width)
     , height(m.height)
     , data(new type_t[m.width * m.height])
@@ -37,10 +33,6 @@ struct map_t {
   const type_t &get(uint32_t x, uint32_t y) const {
     assert(x < width && y < height);
     return data[x + y * width];
-  }
-
-  bool is_solid(uint32_t x, uint32_t y) const {
-    return (get(x, y) & mask_solid) != 0;
   }
 
   void clear(uint8_t tile) {

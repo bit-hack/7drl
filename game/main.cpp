@@ -3,22 +3,20 @@
 
 #include <cassert>
 #include <memory>
+#include <array>
 
 #include "font.h"
 #include "random.h"
+#include "buffer2d.h"
+#include "console.h"
 
 
 struct program_t {
 
-  struct buffer_t {
-    uint32_t *pixels;
-    uint32_t width;
-    uint32_t height;
-  };
-
   program_t()
     : screen(nullptr)
     , active(false)
+    , console(32, 32)
   {
   }
 
@@ -37,9 +35,6 @@ struct program_t {
     width = w;
     height = h;
     scale = s;
-    if (s > 1) {
-      buffer.reset(new uint32_t[w * h]);
-    }
     return true;
   }
 
@@ -68,71 +63,88 @@ struct program_t {
 
   void render_x1() {
     assert(screen);
+    uint32_t *d0 = (uint32_t*)screen->pixels;
+    const uint32_t pitch = width * 2;
+    console.render(d0, pitch, width / 8, height / 8);
     SDL_Flip(screen);
   }
 
   void render_x2() {
     assert(screen);
+    const uint32_t pitch = width * 2;
     uint32_t *d0 = (uint32_t*)screen->pixels;
-    uint32_t *d1 = d0 + width * 2;
-    const uint32_t *src = buffer.get();
-    for (uint32_t y = 0; y < height; ++y) {
-      for (uint32_t x = 0; x < width; ++x) {
-        const uint32_t pix = src[x];
-        d0[x * 2 + 0] = pix;
-        d0[x * 2 + 1] = pix;
-        d1[x * 2 + 0] = pix;
-        d1[x * 2 + 1] = pix;
+    uint32_t *d1 = d0 + pitch;
+    // render to every second scanline and in the left half of the screen
+    console.render(d0, pitch * 2, width / 8, height / 8);
+    // step over the screen unpacking the scanlines
+    for (int y = 0; y < screen->h; y += 2) {
+      for (int x = 0; x < screen->w; ++x) {
+        d1[x] = d0[x >> 1];
       }
-      src += width;
-      d0  += width * 4;
-      d1  += width * 4;
+      // copy the now correct scanline to above one
+      memcpy(d0, d1, screen->w * 4);
+      // step down two scanlines
+      d0 = d1 + pitch;
+      d1 = d0 + pitch;
     }
     SDL_Flip(screen);
   }
 
-  void get_buffer(buffer_t &out) {
-    assert(screen && width && height);
-    out.width = width;
-    out.height = height;
-    if (buffer) {
-      out.pixels = buffer.get();
-    }
-    else {
-      out.pixels = (uint32_t*)screen->pixels;
-    }
-  }
-
+  librl::console_t console;
   uint32_t width, height;
   bool active;
   uint32_t scale;
-  std::unique_ptr<uint32_t[]> buffer;
   SDL_Surface *screen;
+};
+
+std::array<const char *, 8> examples = {
+  "Hello ",
+  "Heya \r this is something",
+  "really long string that will most likely wrap around\n",
+  "Hello World\n",
+  "this is another string\r\n",
+  "foo bar",
+  "this is a thing\n",
+  "1\n"
 };
 
 int main(int argc, char *args[]) {
 
   program_t prog;
 
-  if (!prog.init(320, 240, 2)) {
+  if (!prog.init(256, 256, 2)) {
     return 1;
   }
 
   uint64_t seed = 12345;
 
+  uint32_t ticks = SDL_GetTicks();
+
+  prog.console.window_set(librl::int2{ 2, 2 }, librl::int2{ 16, 16 });
+  prog.console.window_clear();
+
   while (prog.active) {
     prog.tick();
 
-    program_t::buffer_t b;
-    prog.get_buffer(b);
-
-    for (uint32_t y = 0; y < b.height; ++y) {
-      for (uint32_t x = 0; x < b.width; ++x) {
-        b.pixels[x + y * b.width] = librl::random(seed);
+#if 0
+    uint32_t cw = prog.console.chars.width;
+    uint32_t ch = prog.console.chars.height;
+    for (uint32_t y = 0; y < ch; ++y) {
+      for (uint32_t x = 0; x < cw; ++x) {
+        prog.console.chars.get(x, y) = (uint8_t)librl::random(seed);
       }
     }
+#else
+    uint32_t diff = SDL_GetTicks() - ticks;
+    if (diff > 100) {
+      ticks += diff;
+      const char *str = examples[librl::random(seed) & 0x7];
+      prog.console.puts(str);
+    }
+#endif
 
     prog.render();
+    SDL_Delay(10);
   }
 
   return 0;
