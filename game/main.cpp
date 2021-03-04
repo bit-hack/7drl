@@ -110,7 +110,6 @@ struct program_t {
   SDL_Surface *screen;
 };
 
-
 int main(int argc, char *args[]) {
 
   program_t prog;
@@ -127,8 +126,8 @@ int main(int argc, char *args[]) {
     program_t::buffer_t b;
     prog.get_buffer(b);
 
-    for (int y = 0; y < b.height; ++y) {
-      for (int x = 0; x < b.width; ++x) {
+    for (uint32_t y = 0; y < b.height; ++y) {
+      for (uint32_t x = 0; x < b.width; ++x) {
         b.pixels[x + y * b.width] = librl::random(seed);
       }
     }
