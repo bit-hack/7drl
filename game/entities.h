@@ -1,7 +1,10 @@
 #pragma
+#include <cstdio>
+
 #include "entity.h"
 #include "gc.h"
 #include "game.h"
+#include "raycast.h"
 
 namespace game {
 
@@ -30,22 +33,18 @@ struct ent_player_t : public librl::entity_t {
   }
 
   void turn(librl::game_t &game) override {
+    const int32_t map_w = game.map_get().width;
+    const int32_t map_h = game.map_get().height;
     librl::input_event_t event;
     if (game.input_event_pop(event)) {
       switch (event.type) {
-      case librl::input_event_t::key_up:
-        --pos.y; ++order;
-        break;
-      case librl::input_event_t::key_down:
-        ++pos.y; ++order;
-        break;
-      case librl::input_event_t::key_left:
-        --pos.x; ++order;
-        break;
-      case librl::input_event_t::key_right:
-        ++pos.x; ++order;
-        break;
+      case librl::input_event_t::key_up:    pos.y > 0       ? --pos.y : 0; break;
+      case librl::input_event_t::key_down:  pos.y < map_h-1 ? ++pos.y : 0; break;
+      case librl::input_event_t::key_left:  pos.x > 0       ? --pos.x : 0; break;
+      case librl::input_event_t::key_right: pos.x < map_w-1 ? ++pos.x : 0; break;
       }
+      ++order;
+      game.delay(500);
     }
   }
 };
@@ -67,17 +66,25 @@ struct ent_test_t : public librl::entity_t {
 
   void render(librl::game_t &game) override {
     auto &con = game.console_get();
-    con.chars.get(pos.x, pos.y) = 'H';
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.chars.get(pos.x, pos.y) = 'H';
+    }
   }
 
   void turn(librl::game_t &game) override {
+    const int32_t map_w = game.map_get().width;
+    const int32_t map_h = game.map_get().height;
     switch (librl::random(seed) & 3) {
-    case 0: ++pos.x; break;
-    case 1: --pos.x; break;
-    case 2: ++pos.y; break;
-    case 3: --pos.y; break;
+    case 0: pos.x < map_w-1 ? ++pos.x : 0; break;
+    case 1: pos.x > 0       ? --pos.x : 0; break;
+    case 2: pos.y < map_h-1 ? ++pos.y : 0; break;
+    case 3: pos.y > 0       ? --pos.y : 0; break;
     }
     ++order;
+    game.delay(500);
   }
 };
 

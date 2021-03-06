@@ -42,6 +42,7 @@ struct game_t {
     if (generator) {
       generator->generate(*this);
     }
+    render();
   }
 
   buffer2d_t &map_get() {
@@ -49,7 +50,7 @@ struct game_t {
     return *map;
   }
 
-  void map_render();
+  void render();
 
   void console_create(uint32_t w, uint32_t h) {
     console.reset(new console_t(w, h));
@@ -63,7 +64,19 @@ struct game_t {
   entity_t *entity_add(entity_t *ent) {
     assert(ent);
     entities.push_back(ent);
-    entities_sort();
+
+    // bubble to front as needed
+    auto itt = entities.rbegin();
+    while (std::next(itt) != entities.rend()) {
+      if ((*itt)->order < (*std::next(itt))->order) {
+        std::swap(*itt, *std::next(itt));
+        itt = std::next(itt);
+      }
+      else {
+        break;
+      }
+    }
+
     return ent;
   }
 
@@ -92,7 +105,7 @@ struct game_t {
   }
 
   void delay(uint32_t ms) {
-    // dummy
+    // todo
   }
 
   void tick();
@@ -101,15 +114,18 @@ struct game_t {
     return librl::random(seed);
   }
 
-  gc_t gc;
+  bool is_player_turn() const {
+    return entities.empty() ? false : (entities.front() == player);
+  }
 
+  gc_t gc;
   entity_t *player;
 
 protected:
 
-  uint64_t seed;
+  void post_turn();
 
-  void entities_sort();
+  uint64_t seed;
 
   std::deque<input_event_t> input;
   std::vector<entity_t *> entities;

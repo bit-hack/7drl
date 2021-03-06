@@ -51,6 +51,9 @@ struct program_t {
       active = false;
       break;
     case SDL_KEYUP:
+      if (!game.is_player_turn()) {
+        return;
+      }
       switch (event.key.keysym.sym) {
       case SDLK_LEFT:  game.input_event_push(librl::input_event_t{ librl::input_event_t::key_left  }); break;
       case SDLK_RIGHT: game.input_event_push(librl::input_event_t{ librl::input_event_t::key_right }); break;
@@ -144,10 +147,11 @@ int main(int argc, char *args[]) {
   game.map_create(320 / 8, 240 / 8);
 
   while (prog.active) {
-    prog.tick();  
+    prog.tick();
     prog.game.tick();
     prog.render();
-    SDL_Delay(10);
+    // dont burn up the CPU
+    SDL_Delay(20);
   }
 
   return 0;
