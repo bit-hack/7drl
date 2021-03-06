@@ -5,18 +5,24 @@
 #include <memory>
 #include <array>
 
-#include "font.h"
-#include "random.h"
+// librl
 #include "buffer2d.h"
 #include "console.h"
+#include "game.h"
+
+// game
+#include "generator.h"
 
 
 struct program_t {
 
-  program_t()
-    : screen(nullptr)
+  program_t(librl::game_t &game)
+    : game(game)
+    , width(0)
+    , height(0)
     , active(false)
-    , console(32, 32)
+    , scale(0)
+    , screen(nullptr)
   {
   }
 
@@ -35,16 +41,32 @@ struct program_t {
     width = w;
     height = h;
     scale = s;
+    game.console_create(w / 8, h / 8);
     return true;
+  }
+
+  void on_event(const SDL_Event &event) {
+    switch (event.type) {
+    case SDL_QUIT:
+      active = false;
+      break;
+    case SDL_KEYUP:
+      switch (event.key.keysym.sym) {
+      case SDLK_LEFT:  game.input_event_push(librl::input_event_t{ librl::input_event_t::key_left  }); break;
+      case SDLK_RIGHT: game.input_event_push(librl::input_event_t{ librl::input_event_t::key_right }); break;
+      case SDLK_UP:    game.input_event_push(librl::input_event_t{ librl::input_event_t::key_up    }); break;
+      case SDLK_DOWN:  game.input_event_push(librl::input_event_t{ librl::input_event_t::key_down  }); break;
+      }
+      break;
+    case SDL_MOUSEBUTTONUP:
+      break;
+    }
   }
 
   void pump_events() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        active = false;
-        return;
-      }
+      on_event(event);
     }
   }
 
@@ -65,7 +87,7 @@ struct program_t {
     assert(screen);
     uint32_t *d0 = (uint32_t*)screen->pixels;
     const uint32_t pitch = width * 2;
-    console.render(d0, pitch, width / 8, height / 8);
+    game.console_get().render(d0, pitch, width / 8, height / 8);
     SDL_Flip(screen);
   }
 
@@ -75,7 +97,7 @@ struct program_t {
     uint32_t *d0 = (uint32_t*)screen->pixels;
     uint32_t *d1 = d0 + pitch;
     // render to every second scanline and in the left half of the screen
-    console.render(d0, pitch * 2, width / 8, height / 8);
+    game.console_get().render(d0, pitch * 2, width / 8, height / 8);
     // step over the screen unpacking the scanlines
     for (int y = 0; y < screen->h; y += 2) {
       for (int x = 0; x < screen->w; ++x) {
@@ -90,59 +112,40 @@ struct program_t {
     SDL_Flip(screen);
   }
 
-  librl::console_t console;
+  librl::game_t &game;
+
   uint32_t width, height;
   bool active;
   uint32_t scale;
   SDL_Surface *screen;
 };
 
-std::array<const char *, 8> examples = {
-  "Hello ",
-  "Heya \r this is something",
-  "really long string that will most likely wrap around\n",
-  "Hello World\n",
-  "this is another string\r\n",
-  "foo bar",
-  "this is a thing\n",
-  "1\n"
+
+namespace game{
+
+struct game_7drl_t : public librl::game_t {
+
+  game_7drl_t() {
+    generator.reset(new game::generator_1_t);
+  }
 };
+
+} // namespace game
 
 int main(int argc, char *args[]) {
 
-  program_t prog;
+  game::game_7drl_t game;
+  program_t prog{ game };
 
-  if (!prog.init(256, 256, 2)) {
+  if (!prog.init(320, 240, 2)) {
     return 1;
   }
 
-  uint64_t seed = 12345;
-
-  uint32_t ticks = SDL_GetTicks();
-
-  prog.console.window_set(librl::int2{ 2, 2 }, librl::int2{ 16, 16 });
-  prog.console.window_clear();
+  game.map_create(320 / 8, 240 / 8);
 
   while (prog.active) {
-    prog.tick();
-
-#if 0
-    uint32_t cw = prog.console.chars.width;
-    uint32_t ch = prog.console.chars.height;
-    for (uint32_t y = 0; y < ch; ++y) {
-      for (uint32_t x = 0; x < cw; ++x) {
-        prog.console.chars.get(x, y) = (uint8_t)librl::random(seed);
-      }
-    }
-#else
-    uint32_t diff = SDL_GetTicks() - ticks;
-    if (diff > 100) {
-      ticks += diff;
-      const char *str = examples[librl::random(seed) & 0x7];
-      prog.console.puts(str);
-    }
-#endif
-
+    prog.tick();  
+    prog.game.tick();
     prog.render();
     SDL_Delay(10);
   }
