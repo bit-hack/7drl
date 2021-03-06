@@ -13,7 +13,6 @@
 // game
 #include "generator.h"
 
-
 struct program_t {
 
   program_t(librl::game_t &game)
@@ -51,6 +50,13 @@ struct program_t {
       active = false;
       break;
     case SDL_KEYUP:
+
+      switch (event.key.keysym.sym) {
+      case SDLK_ESCAPE:
+        active = false;
+        break;
+      }
+
       if (!game.is_player_turn()) {
         return;
       }
