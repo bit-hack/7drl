@@ -37,6 +37,9 @@ struct game_t {
   }
 
   void map_create(uint32_t w, uint32_t h) {
+    // clear the old map entities entirely
+    entities.clear();
+
     map.reset(new buffer2d_t(w, h));
     // run the map generator
     if (generator) {
@@ -64,7 +67,6 @@ struct game_t {
   entity_t *entity_add(entity_t *ent) {
     assert(ent);
     entities.push_back(ent);
-
     // bubble to front as needed
     auto itt = entities.rbegin();
     while (std::next(itt) != entities.rend()) {
@@ -76,7 +78,6 @@ struct game_t {
         break;
       }
     }
-
     return ent;
   }
 

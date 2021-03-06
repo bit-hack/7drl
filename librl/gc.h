@@ -51,6 +51,17 @@ struct gc_t {
     return _allocs.size();
   }
 
+  // clear all previous allocations
+  void clear() {
+    for (auto &a : _allocs) {
+      delete a;
+    }
+    _allocs.clear();
+    _valid.clear();
+    _mark.clear();
+    persist.clear();
+  }
+
   // persistant objects
   std::set<gc_base_t *> persist;
 

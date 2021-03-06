@@ -37,14 +37,21 @@ struct ent_player_t : public librl::entity_t {
     const int32_t map_h = game.map_get().height;
     librl::input_event_t event;
     if (game.input_event_pop(event)) {
+
+      librl::int2 np = pos;
+
       switch (event.type) {
-      case librl::input_event_t::key_up:    pos.y > 0       ? --pos.y : 0; break;
-      case librl::input_event_t::key_down:  pos.y < map_h-1 ? ++pos.y : 0; break;
-      case librl::input_event_t::key_left:  pos.x > 0       ? --pos.x : 0; break;
-      case librl::input_event_t::key_right: pos.x < map_w-1 ? ++pos.x : 0; break;
+      case librl::input_event_t::key_up:    np.y > 0       ? --np.y : 0; break;
+      case librl::input_event_t::key_down:  np.y < map_h-1 ? ++np.y : 0; break;
+      case librl::input_event_t::key_left:  np.x > 0       ? --np.x : 0; break;
+      case librl::input_event_t::key_right: np.x < map_w-1 ? ++np.x : 0; break;
       }
-      ++order;
-      game.delay(500);
+
+      if (game.map_get().get(np) == game.map_get().get(pos)) {
+        pos = np;
+        ++order;
+        game.delay(500);
+      }
     }
   }
 };
@@ -77,12 +84,20 @@ struct ent_test_t : public librl::entity_t {
   void turn(librl::game_t &game) override {
     const int32_t map_w = game.map_get().width;
     const int32_t map_h = game.map_get().height;
+
+    librl::int2 np = pos;
+
     switch (librl::random(seed) & 3) {
-    case 0: pos.x < map_w-1 ? ++pos.x : 0; break;
-    case 1: pos.x > 0       ? --pos.x : 0; break;
-    case 2: pos.y < map_h-1 ? ++pos.y : 0; break;
-    case 3: pos.y > 0       ? --pos.y : 0; break;
+    case 0: np.x < map_w-1 ? ++np.x : 0; break;
+    case 1: np.x > 0       ? --np.x : 0; break;
+    case 2: np.y < map_h-1 ? ++np.y : 0; break;
+    case 3: np.y > 0       ? --np.y : 0; break;
     }
+
+    if (game.map_get().get(np) == game.map_get().get(pos)) {
+      pos = np;
+    }
+
     ++order;
     game.delay(500);
   }

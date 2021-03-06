@@ -55,6 +55,9 @@ struct program_t {
       case SDLK_ESCAPE:
         active = false;
         break;
+      case SDLK_SPACE:
+        game.map_create(width / 8, height / 8);
+        break;
       }
 
       if (!game.is_player_turn()) {
@@ -135,7 +138,7 @@ namespace game{
 struct game_7drl_t : public librl::game_t {
 
   game_7drl_t() {
-    generator.reset(new game::generator_1_t);
+    generator.reset(new game::generator_2_t);
   }
 };
 

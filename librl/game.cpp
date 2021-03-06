@@ -54,12 +54,20 @@ void game_t::render() {
 
   for (uint32_t y = 0; y < m.height; ++y) {
     for (uint32_t x = 0; x < m.width; ++x) {
-      const auto &cell = m.get(x, y);
-      char ch = (cell == 0) ? '.' : '#';
-      if (!raycast(player->pos, int2{ int32_t(x), int32_t(y) }, 1, m)) {
-        ch = ' ';
+      auto &cell = m.get(x, y);
+#if 1
+      const bool seen = cell & 0x80;
+      char ch = ((cell & 0x7f) == 0) ? '.' : '#';
+      if (raycast(player->pos, int2{ int32_t(x), int32_t(y) }, 1, m)) {
+        cell |= 0x80;
+      }
+      else {
+        ch = seen ? ch : ' ';
       }
       c.chars.get(x, y) = ch;
+#else
+      c.chars.get(x, y) = '0' + cell;
+#endif
     }
   }
 

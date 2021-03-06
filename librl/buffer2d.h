@@ -3,6 +3,7 @@
 #include <cassert>
 #include <memory>
 
+#include "common.h"
 
 namespace librl {
 
@@ -33,6 +34,14 @@ struct buffer2d_t {
   const type_t &get(uint32_t x, uint32_t y) const {
     assert(x < width && y < height);
     return data[x + y * width];
+  }
+
+  type_t &get(const int2 &p) {
+    return get(p.x, p.y);
+  }
+
+  const type_t &get(const int2 &p) const {
+    return get(p.x, p.y);
   }
 
   void clear(uint8_t tile) {
