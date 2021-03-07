@@ -20,7 +20,7 @@ struct ent_player_t : public librl::entity_actor_t {
     : librl::entity_actor_t(TYPE, game)
   {
     name = "player";
-    hp = 40;
+    hp = 100;
   }
 
   virtual int32_t get_accuracy() const { return 50; }
@@ -38,14 +38,9 @@ struct ent_player_t : public librl::entity_actor_t {
     con.chars.get(pos.x, pos.y) = '@';
   }
 
-  void turn_end() {
-    ++order;
-    game.delay(500);
-  }
-
   void interact_with(entity_t *e);
 
-  void turn() override;
+  bool turn() override;
 };
 
 struct ent_test_t : public librl::entity_actor_t {
@@ -80,14 +75,9 @@ struct ent_test_t : public librl::entity_actor_t {
     }
   }
 
-  void turn_end() {
-    ++order;
-    game.delay(500);
-  }
-
   void interact_with(entity_t *e);
 
-  void turn() override;
+  bool turn() override;
 
   uint64_t seed;
 };

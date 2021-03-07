@@ -14,21 +14,29 @@ void game_t::tick() {
     gc.check_in(e);
   }
   gc.check_in(player);
+
   // always tick the first entity
   if (!entities.empty()) {
     entity_t *ent = entities.front();
     assert(ent);
-    const auto order = ent->order;
-    ent->turn();
-    if (ent->order != order) {
+    if (ent->turn()) {
       post_turn();
     }
   }
+
   // run a garbage collection cycle
   gc.collect();
 }
 
 void game_t::post_turn() {
+  if (player) {
+    pfield->drop(player->pos.x, player->pos.y, 5);
+  }
+  // update the potential field
+  assert(pfield);
+  pfield->update();
+
+#if 0
   // bubble entitiy down to new order slot
   auto itt = entities.begin();
   while (std::next(itt) != entities.end()) {
@@ -40,6 +48,11 @@ void game_t::post_turn() {
       break;
     }
   }
+#else
+  // move first to last
+  std::rotate(entities.begin(), entities.begin() + 1, entities.end());
+#endif
+
   // re-render the map
   render();
 }
@@ -69,7 +82,7 @@ void game_t::render() {
       }
       c.chars.get(x, y) = ch;
 #else
-      c.chars.get(x, y) = '0' + cell;
+      c.chars.get(x, y) = '0' + pfield->read().get(x, y);
 #endif
     }
   }

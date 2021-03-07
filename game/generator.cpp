@@ -42,10 +42,10 @@ void generator_2_t::place_rect() {
   const int32_t w = 2 + rand(7);
   const int32_t h = 2 + rand(7);
 
-  const int32_t x0 = librl::clamp(0, x - (w / 2),     map_w);
-  const int32_t y0 = librl::clamp(0, y - (h / 2),     map_h);
-  const int32_t x1 = librl::clamp(0, x - (w / 2) + w, map_w);
-  const int32_t y1 = librl::clamp(0, y - (h / 2) + h, map_h);
+  const int32_t x0 = librl::clamp(1, x - (w / 2),     map_w-1);
+  const int32_t y0 = librl::clamp(1, y - (h / 2),     map_h-1);
+  const int32_t x1 = librl::clamp(1, x - (w / 2) + w, map_w-1);
+  const int32_t y1 = librl::clamp(1, y - (h / 2) + h, map_h-1);
 
   char v = rand(num_colours);
 
@@ -72,7 +72,7 @@ void generator_2_t::place_walls() {
 
 void generator_2_t::place_items() {
   auto &map = game.map_get();
-  for (int32_t i = 0; i < 4; ++i) {
+  for (int32_t i = 0; i < 6; ++i) {
     librl::entity_t *e = game.gc.alloc<game::ent_test_t>(game);
     for (;;) {
       e->pos = rand_map_coord();

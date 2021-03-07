@@ -24,6 +24,11 @@ static inline type_t clamp(const type_t lo, const type_t x, const type_t hi) {
 }
 
 template <typename type_t>
+static inline type_t sign(const type_t x) {
+  return (x < 0) ? -1 : (x > 0 ? 1 : 0);
+}
+
+template <typename type_t>
 struct vec2_t {
   type_t x, y;
 };

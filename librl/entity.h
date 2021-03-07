@@ -29,7 +29,7 @@ struct entity_t : librl::gc_base_t {
     // dummy
   }
 
-  virtual void turn() = 0;
+  virtual bool turn() = 0;
 
   template <typename type_t>
   bool is_a() const {

@@ -31,6 +31,10 @@ void entity_actor_t::attack(entity_actor_t *target) {
 }
 
 void entity_actor_t::kill() {
+  if (this == game.player) {
+    game.player = nullptr;
+    // XXX: need to make sure we register the end game
+  }
   game.entity_remove(this);
 }
 

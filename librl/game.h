@@ -7,6 +7,7 @@
 #include "gc.h"
 #include "entity.h"
 #include "random.h"
+#include "pfield.h"
 
 namespace librl {
 
@@ -53,6 +54,13 @@ struct game_t {
     if (generator) {
       generator->generate();
     }
+
+    // XXX: FIXME
+    const uint8_t wall_tile = 1;
+
+    // create a potential field
+    pfield.reset(new pfield_t(*map, wall_tile));
+
     render();
   }
 
@@ -74,17 +82,10 @@ struct game_t {
 
   entity_t *entity_add(entity_t *ent) {
     assert(ent);
-    entities.push_back(ent);
-    // bubble to front as needed
-    auto itt = entities.rbegin();
-    while (std::next(itt) != entities.rend()) {
-      if ((*itt)->order < (*std::next(itt))->order) {
-        std::swap(*itt, *std::next(itt));
-        itt = std::next(itt);
-      }
-      else {
-        break;
-      }
+    // xxx: this is so crap, please fix me
+    auto itt = std::find(entities.begin(), entities.end(), ent);
+    if (itt == entities.end()) {
+      entities.push_back(ent);
     }
     return ent;
   }
@@ -141,6 +142,11 @@ struct game_t {
     return entities.empty() ? false : (entities.front() == player);
   }
 
+  pfield_t &pfield_get() {
+    assert(pfield);
+    return *pfield;
+  }
+
   gc_t gc;
   entity_t *player;
 
@@ -155,6 +161,7 @@ protected:
   std::unique_ptr<map_generator_t> generator;
   std::unique_ptr<buffer2d_t> map;
   std::unique_ptr<console_t> console;
+  std::unique_ptr<pfield_t> pfield;
 };
 
 } // namespace librl
