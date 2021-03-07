@@ -30,6 +30,8 @@ struct generator_2_t : public librl::map_generator_t {
     return librl::int2{rand(map.width), rand(map.height)};
   }
 
+  void mask_border();
+
   uint64_t seed;
 };
 
