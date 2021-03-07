@@ -12,6 +12,8 @@
 
 // game
 #include "generator.h"
+#include "enums.h"
+#include "entities.h"
 
 struct program_t {
 
@@ -138,7 +140,12 @@ namespace game{
 struct game_7drl_t : public librl::game_t {
 
   game_7drl_t() {
-    generator.reset(new game::generator_2_t);
+    generator.reset(new game::generator_2_t(*this));
+  }
+
+  void create_player() {
+    assert(!player);
+    player = gc.alloc<ent_player_t>(*this);
   }
 };
 
@@ -147,13 +154,15 @@ struct game_7drl_t : public librl::game_t {
 int main(int argc, char *args[]) {
 
   game::game_7drl_t game;
+  game.create_player();
   program_t prog{ game };
 
-  if (!prog.init(320, 240, 2)) {
+  if (!prog.init(game::screen_width,
+                 game::screen_height, 2)) {
     return 1;
   }
 
-  game.map_create(320 / 8, 240 / 8);
+  game.map_create(prog.width / 8, prog.height / 8);
 
   while (prog.active) {
     prog.tick();

@@ -30,4 +30,9 @@ struct vec2_t {
 
 typedef vec2_t<int32_t> int2;
 
+template <typename type_t>
+inline bool operator == (const vec2_t<type_t> &a, const vec2_t<type_t> &b) {
+  return a.x == b.x && a.y == b.y;
+}
+
 }  // namespace librl

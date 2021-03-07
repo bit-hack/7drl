@@ -1,3 +1,7 @@
+#include <stdarg.h>
+#include <array>
+#include <cstdio>
+
 #include "game.h"
 #include "raycast.h"
 
@@ -15,7 +19,7 @@ void game_t::tick() {
     entity_t *ent = entities.front();
     assert(ent);
     const auto order = ent->order;
-    ent->turn(*this);
+    ent->turn();
     if (ent->order != order) {
       post_turn();
     }
@@ -56,13 +60,12 @@ void game_t::render() {
     for (uint32_t x = 0; x < m.width; ++x) {
       auto &cell = m.get(x, y);
 #if 1
-      const bool seen = cell & 0x80;
-      char ch = ((cell & 0x7f) == 0) ? '.' : '#';
+      char ch = (cell== 0) ? '.' : '#';
       if (raycast(player->pos, int2{ int32_t(x), int32_t(y) }, 1, m)) {
-        cell |= 0x80;
+        // mark tile to fow map
       }
       else {
-        ch = seen ? ch : ' ';
+        ch = ' ';
       }
       c.chars.get(x, y) = ch;
 #else
@@ -74,7 +77,27 @@ void game_t::render() {
   // update entities
   for (auto &e : entities) {
     assert(e);
-    e->render(*this);
+    e->render();
   }
 }
+
+entity_t *game_t::entity_find(const int2 &p) const {
+  for (entity_t *e : entities) {
+    if (e->pos == p) {
+      return e;
+    }
+  }
+  return nullptr;
+}
+
+void game_t::message_post(const char *str, ...) {
+  std::array<char, 1024> buf;
+  va_list args;
+  va_start(args, str);
+  vsnprintf(buf.data(), buf.size(), str, args);
+  va_end(args);
+  buf.back() = '\0';
+  printf("%s\n", buf.data());
+}
+
 }  // namespace librl

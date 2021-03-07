@@ -11,7 +11,15 @@
 namespace librl {
 
 struct map_generator_t {
-  virtual void generate(game_t &game) = 0;
+
+  map_generator_t(struct game_t &game)
+    : game(game)
+  {
+  }
+
+  virtual void generate() = 0;
+
+  game_t &game;
 };
 
 struct input_event_t {
@@ -43,7 +51,7 @@ struct game_t {
     map.reset(new buffer2d_t(w, h));
     // run the map generator
     if (generator) {
-      generator->generate(*this);
+      generator->generate();
     }
     render();
   }
@@ -89,8 +97,22 @@ struct game_t {
         entities.erase(itt);
         return;
       }
+      else {
+        ++itt;
+      }
     }
   }
+
+  void entity_clear_all() {
+    entities.clear();
+    // note: we dont clear game.player here on purpose as we want that player
+    // to persist between level changes
+  }
+
+  entity_t *entity_find(const int2 &p) const;
+
+  // post a message to the player
+  void message_post(const char *fmt, ...);
 
   void input_event_push(const input_event_t &event) {
     input.push_back(event);

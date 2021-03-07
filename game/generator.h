@@ -1,28 +1,36 @@
 #pragma once
+// librl
 #include "game.h"
 
-namespace game {
+// game
+#include "enums.h"
 
-struct generator_1_t : public librl::map_generator_t {
-  void generate(librl::game_t &game) override;
-};
+namespace game {
 
 struct generator_2_t : public librl::map_generator_t {
 
   static const uint32_t num_colours = 3;
 
-  void generate(librl::game_t &game) override;
+  generator_2_t(librl::game_t &game)
+    : librl::map_generator_t(game) {
+  }
 
-  void place_rect(librl::game_t &game);
-  void place_walls(librl::game_t &game);
-  void place_items(librl::game_t &game);
+  void generate() override;
+  void place_rect();
+  void place_walls();
+  void place_items();
+  void place_player();
 
   int32_t rand(int32_t max) {
     return librl::random(seed) % max;
   }
 
+  librl::int2 rand_map_coord() {
+    auto &map = game.map_get();
+    return librl::int2{rand(map.width), rand(map.height)};
+  }
+
   uint64_t seed;
 };
-
 
 }  // namespace game

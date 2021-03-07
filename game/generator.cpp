@@ -9,36 +9,13 @@
 
 namespace game {
 
-void generator_1_t::generate(librl::game_t &game) {
-  auto &map = game.map_get();
-  const uint32_t map_w = map.width;
-  const uint32_t map_h = map.height;
+void generator_2_t::generate() {
 
-  // fill with random crap
-  uint64_t seed = 12345;
-  for (uint32_t y = 0; y < map.height; ++y) {
-    for (uint32_t x = 0; x < map.width; ++x) {
-      map.get(x, y) = 0;
-    }
-  }
-  for (uint32_t i = 0; i < 50; ++i) {
-    map.get(librl::random(seed) % map_w, librl::random(seed) % map_h) = 1;
-  }
+  assert(game.player);
+  game.entity_clear_all();
+  game.entity_add(game.player);
+  game.player->order = 0;  // XXX: this is a hack
 
-  // create a player
-  librl::entity_t *e = game.gc.alloc<game::ent_player_t>();
-  e->pos = librl::int2{4, 4};
-  game.player = game.entity_add(e);
-
-  // create enemies
-  for (int i = 0; i < 4; ++i) {
-    librl::entity_t *e = game.gc.alloc<game::ent_test_t>(game.random());
-    e->pos = librl::int2{ librl::random(seed) % 16, librl::random(seed) % 16 };
-    game.entity_add(e);
-  }
-}
-
-void generator_2_t::generate(librl::game_t &game) {
   auto &map = game.map_get();
   const int32_t map_w = map.width;
   const int32_t map_h = map.height;
@@ -48,24 +25,14 @@ void generator_2_t::generate(librl::game_t &game) {
   game.map_get().clear(num_colours);
 
   for (int i = 0; i < 50; ++i) {
-    place_rect(game);
+    place_rect();
   }
-  place_walls(game);
-
-  // create a player
-  librl::entity_t *e = game.gc.alloc<game::ent_player_t>();
-  for (;;) {
-    e->pos = librl::int2{ rand(map_w), rand(map_h) };
-    if (map.get(e->pos.x, e->pos.y) == 0) {
-      break;
-    }
-  }
-  game.player = game.entity_add(e);
-
-  place_items(game);
+  place_walls();
+  place_player();
+  place_items();
 }
 
-void generator_2_t::place_rect(librl::game_t &game) {
+void generator_2_t::place_rect() {
   auto &map = game.map_get();
   const int32_t map_w = map.width;
   const int32_t map_h = map.height;
@@ -89,7 +56,7 @@ void generator_2_t::place_rect(librl::game_t &game) {
   }
 }
 
-void generator_2_t::place_walls(librl::game_t &game) {
+void generator_2_t::place_walls() {
   auto &map = game.map_get();
   const int32_t map_w = map.width;
   const int32_t map_h = map.height;
@@ -98,28 +65,36 @@ void generator_2_t::place_walls(librl::game_t &game) {
       auto &a = map.get(x, y + 0);
       auto &b = map.get(x, y + 1);
       auto &c = map.get(x + 1, y);
-      a = (a != b || a != c) && (rand(4) > 0) ? 1 : 0;
+      a = (a != b || a != c) && (rand(4) > 0) ? tile_wall : tile_floor;
     }
   }
 }
 
-void generator_2_t::place_items(librl::game_t &game) {
+void generator_2_t::place_items() {
   auto &map = game.map_get();
-  const int32_t map_w = map.width;
-  const int32_t map_h = map.height;
-
   for (int32_t i = 0; i < 4; ++i) {
-
-    librl::entity_t *e = game.gc.alloc<game::ent_test_t>(game.random());
+    librl::entity_t *e = game.gc.alloc<game::ent_test_t>(game);
     for (;;) {
-      e->pos = librl::int2{ rand(map_w), rand(map_h) };
-      if (map.get(e->pos.x, e->pos.y) == 0) {
+      e->pos = rand_map_coord();
+      if (map.get(e->pos.x, e->pos.y) == tile_floor) {
         break;
       }
     }
     game.entity_add(e);
-
   }
+}
+
+void generator_2_t::place_player() {
+  assert(game.player);
+  librl::entity_t *e = game.player;
+  auto &map = game.map_get();
+  for (;;) {
+    e->pos = rand_map_coord();
+    if (map.get(e->pos.x, e->pos.y) == tile_floor) {
+      break;
+    }
+  }
+  game.player = game.entity_add(e);
 }
 
 }  // namespace game
