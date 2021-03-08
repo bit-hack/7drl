@@ -41,8 +41,6 @@ struct entity_t : librl::gc_base_t {
     return type_t::SUBCLASS == subclass;
   }
 
-  virtual void _enumerate(gc_enum_t &func) = 0;
-
   uint64_t order;
   int2 pos;
   const uint32_t type;
@@ -82,6 +80,10 @@ struct entity_item_t : public entity_t {
   entity_item_t(const uint32_t type, game_t &game)
     : entity_t(type, SUBCLASS, game)
   {
+  }
+
+  bool turn() override {
+    return true;
   }
 
   virtual void use_on(entity_t *e) = 0;

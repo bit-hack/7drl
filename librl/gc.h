@@ -14,7 +14,9 @@ struct gc_base_t {
   virtual ~gc_base_t() {}
 protected:
   friend struct gc_t;
-  virtual void _enumerate(gc_enum_t &func) = 0;
+  virtual void _enumerate(gc_enum_t &func) {
+    // dummy
+  }
 };
 
 struct gc_t {

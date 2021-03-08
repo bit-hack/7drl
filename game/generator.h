@@ -21,6 +21,8 @@ struct generator_2_t : public librl::map_generator_t {
   void place_items();
   void place_player();
 
+  void place_entity(librl::entity_t *ent);
+
   int32_t rand(int32_t max) {
     return librl::random(seed) % max;
   }

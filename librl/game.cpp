@@ -24,6 +24,13 @@ void game_t::tick() {
     }
   }
 
+  // if we have been instructed to generate a new map
+  if (generate_new_map) {
+    entities.clear();
+    map_create(map->width, map->height);
+    generate_new_map = false;
+  }
+
   // run a garbage collection cycle
   gc.collect();
 }

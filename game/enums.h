@@ -12,6 +12,7 @@ enum {
   ent_type_player,
   ent_type_test,
   ent_type_potion,
+  ent_type_stairs,
 };
 
 enum {

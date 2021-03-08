@@ -72,27 +72,31 @@ void generator_2_t::place_walls() {
   }
 }
 
+void generator_2_t::place_entity(librl::entity_t *e) {
+  auto &map = game.map_get();
+  for (int i = 0;; ++i) {
+    assert(i < 100);
+    e->pos = rand_map_coord();
+    if (map.get(e->pos.x, e->pos.y) == tile_floor) {
+      break;
+    }
+  }
+  game.entity_add(e);
+}
+
 void generator_2_t::place_items() {
   auto &map = game.map_get();
   for (int32_t i = 0; i < 6; ++i) {
     librl::entity_t *e = game.gc.alloc<game::ent_test_t>(game);
-    for (;;) {
-      e->pos = rand_map_coord();
-      if (map.get(e->pos.x, e->pos.y) == tile_floor) {
-        break;
-      }
-    }
-    game.entity_add(e);
+    place_entity(e);
   }
-  for (int32_t i = 0; i < 2; ++i) {
+  for (int32_t i = 0; i < 4; ++i) {
     librl::entity_t *e = game.gc.alloc<game::ent_potion_t>(game);
-    for (;;) {
-      e->pos = rand_map_coord();
-      if (map.get(e->pos.x, e->pos.y) == tile_floor) {
-        break;
-      }
-    }
-    game.entity_add(e);
+    place_entity(e);
+  }
+  {
+    librl::entity_t *e = game.gc.alloc<game::ent_stairs_t>(game);
+    place_entity(e);
   }
 }
 

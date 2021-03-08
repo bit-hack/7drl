@@ -44,6 +44,7 @@ struct game_t {
   game_t()
     : player(nullptr)
     , seed(12345)
+    , generate_new_map(false)
   {
   }
 
@@ -151,10 +152,16 @@ struct game_t {
     return *pfield;
   }
 
+  void map_next() {
+    generate_new_map = true;
+  }
+
   gc_t gc;
   entity_t *player;
 
 protected:
+
+  bool generate_new_map;
 
   void post_turn();
 
