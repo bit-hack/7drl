@@ -11,6 +11,7 @@ enum {
   ent_type_none = 0,
   ent_type_player,
   ent_type_test,
+  ent_type_potion,
 };
 
 enum {

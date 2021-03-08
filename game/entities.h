@@ -23,11 +23,11 @@ struct ent_player_t : public librl::entity_actor_t {
     hp = 100;
   }
 
-  virtual int32_t get_accuracy() const { return 50; }
-  virtual int32_t get_damage() const   { return 10; }
-  virtual int32_t get_defense() const  { return 0;  }
-  virtual int32_t get_evasion() const  { return 10; }
-  virtual int32_t get_crit() const     { return 2;  }
+  int32_t get_accuracy() const override { return 50; }
+  int32_t get_damage() const   override { return 10; }
+  int32_t get_defense() const  override { return 0;  }
+  int32_t get_evasion() const  override { return 10; }
+  int32_t get_crit() const     override { return 2;  }
 
   void _enumerate(librl::gc_enum_t &func) override {
     // todo
@@ -55,11 +55,11 @@ struct ent_test_t : public librl::entity_actor_t {
     hp = 30;
   }
 
-  virtual int32_t get_accuracy() const { return 40; }
-  virtual int32_t get_damage() const   { return 10; }
-  virtual int32_t get_defense() const  { return 0;  }
-  virtual int32_t get_evasion() const  { return 0;  }
-  virtual int32_t get_crit() const     { return 0;  }
+  int32_t get_accuracy() const override { return 40; }
+  int32_t get_damage() const   override { return 10; }
+  int32_t get_defense() const  override { return 0;  }
+  int32_t get_evasion() const  override { return 0;  }
+  int32_t get_crit() const     override { return 0;  }
 
   void _enumerate(librl::gc_enum_t &func) override {
     // todo
@@ -79,6 +79,51 @@ struct ent_test_t : public librl::entity_actor_t {
 
   bool turn() override;
 
+  uint64_t seed;
+};
+
+struct ent_potion_t : public librl::entity_item_t {
+
+  static const uint32_t TYPE = ent_type_potion;
+
+  ent_potion_t(librl::game_t &game)
+    : librl::entity_item_t(TYPE, game)
+    , recovery(20)
+    , seed(game.random())
+  {
+    name = "potion";
+  }
+
+  void _enumerate(librl::gc_enum_t &func) override {
+    // todo
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.chars.get(pos.x, pos.y) = 'p';
+    }
+  }
+
+  void use_on(entity_t *e) {
+    if (e->is_type<ent_player_t>()) {
+
+      game.message_post("%s used %s to recovered %u health", e->name.c_str(),
+          name.c_str(), recovery);
+
+      static_cast<ent_player_t*>(e)->hp += recovery;
+      game.entity_remove(this);
+    }
+  }
+
+  bool turn() override {
+    return true;
+  }
+
+  const uint32_t recovery;
   uint64_t seed;
 };
 

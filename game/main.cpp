@@ -169,7 +169,7 @@ int main(int argc, char *args[]) {
     prog.game.tick();
     prog.render();
     // dont burn up the CPU
-    SDL_Delay(20);
+    SDL_Delay(0);
   }
 
   return 0;

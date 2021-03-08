@@ -84,6 +84,16 @@ void generator_2_t::place_items() {
     }
     game.entity_add(e);
   }
+  for (int32_t i = 0; i < 2; ++i) {
+    librl::entity_t *e = game.gc.alloc<game::ent_potion_t>(game);
+    for (;;) {
+      e->pos = rand_map_coord();
+      if (map.get(e->pos.x, e->pos.y) == tile_floor) {
+        break;
+      }
+    }
+    game.entity_add(e);
+  }
 }
 
 void generator_2_t::place_player() {

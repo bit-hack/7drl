@@ -42,8 +42,13 @@ bool ent_player_t::turn() {
 }
 
 void ent_player_t::interact_with(librl::entity_t *ent) {
-  if (ent->type == ent_type_test) {
+  assert(ent);
+  if (ent->is_type<ent_test_t>()) {
     attack(static_cast<librl::entity_actor_t*>(ent));
+  }
+  if (ent->is_subclass<librl::entity_item_t>()) {
+    librl::entity_item_t *item = static_cast<librl::entity_item_t*>(ent);
+    item->use_on(this);
   }
 }
 

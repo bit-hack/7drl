@@ -9,18 +9,18 @@ namespace librl {
 
 struct game_t;
 
-enum {
-  subclass_actor,
-  subclass_item,
+enum subclass_t {
+  ent_subclass_actor,
+  ent_subclass_item,
 };
 
 struct entity_t : librl::gc_base_t {
 
-  entity_t(const uint32_t type, const uint32_t sub, game_t &game)
+  entity_t(const uint32_t type, const uint32_t subclass, game_t &game)
     : order(0)
     , pos(int2{-1, -1})
     , type(type)
-    , subclass(sub)
+    , subclass(subclass)
     , game(game)
   {
   }
@@ -32,8 +32,13 @@ struct entity_t : librl::gc_base_t {
   virtual bool turn() = 0;
 
   template <typename type_t>
-  bool is_a() const {
-    return type_t::TYPE = type;
+  bool is_type() const {
+    return type_t::TYPE == type;
+  }
+
+  template <typename type_t>
+  bool is_subclass() const {
+    return type_t::SUBCLASS == subclass;
   }
 
   virtual void _enumerate(gc_enum_t &func) = 0;
@@ -50,8 +55,10 @@ protected:
 
 struct entity_actor_t : public entity_t {
 
+  static const subclass_t SUBCLASS = ent_subclass_actor;
+
   entity_actor_t(const uint32_t type, game_t &game)
-    : entity_t(type, subclass_actor, game)
+    : entity_t(type, SUBCLASS, game)
   {
   }
 
@@ -68,11 +75,12 @@ struct entity_actor_t : public entity_t {
   int32_t hp;
 };
 
-
 struct entity_item_t : public entity_t {
 
+  static const subclass_t SUBCLASS = ent_subclass_item;
+
   entity_item_t(const uint32_t type, game_t &game)
-    : entity_t(type, subclass_item, game)
+    : entity_t(type, SUBCLASS, game)
   {
   }
 
