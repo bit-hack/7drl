@@ -73,12 +73,21 @@ void game_t::render() {
     for (uint32_t x = 0; x < m.width; ++x) {
       auto &cell = m.get(x, y);
 #if 1
-      char ch = (cell== 0) ? '.' : '#';
-      if (raycast(player->pos, int2{ int32_t(x), int32_t(y) }, 1, m)) {
-        // mark tile to fow map
+      // XXX: dont do this in the librl
+      char ch = (cell == 0) ? '.' : '#';
+      const int2 p = int2{ int32_t(x), int32_t(y) };
+
+      const bool seen = raycast(player->pos, p, 1, m);
+      if (seen) {
+        fog->set(p);
       }
       else {
-        ch = ' ';
+        if (!fog->get(p)) {
+          ch = ' ';
+        }
+        else {
+          ch = (cell == 0) ? ' ' : ch;
+        }
       }
       c.chars.get(x, y) = ch;
 #else

@@ -103,11 +103,11 @@ void generator_2_t::mask_border() {
   auto &map = game.map_get();
   const int32_t map_w = map.width;
   const int32_t map_h = map.height;
-  for (uint32_t y = 0; y < map_h; ++y) {
+  for (int32_t y = 0; y < map_h; ++y) {
     map.get(0, y) = tile_wall;
     map.get(map_w - 1, y) = tile_wall;
   }
-  for (uint32_t x = 0; x < map_w; ++x) {
+  for (int32_t x = 0; x < map_w; ++x) {
     map.get(x, 0) = tile_wall;
     map.get(x, map_h - 1) = tile_wall;
   }

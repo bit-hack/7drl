@@ -8,6 +8,8 @@
 #include "entity.h"
 #include "random.h"
 #include "pfield.h"
+#include "bitset2d.h"
+
 
 namespace librl {
 
@@ -60,6 +62,8 @@ struct game_t {
 
     // create a potential field
     pfield.reset(new pfield_t(*map, wall_tile));
+
+    fog.reset(new bitset2d_t(map->width, map->height));
 
     render();
   }
@@ -162,6 +166,7 @@ protected:
   std::unique_ptr<buffer2d_t> map;
   std::unique_ptr<console_t> console;
   std::unique_ptr<pfield_t> pfield;
+  std::unique_ptr<bitset2d_t> fog;
 };
 
 } // namespace librl
