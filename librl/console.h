@@ -44,7 +44,7 @@ struct console_t {
     return caret;
   }
 
-  buffer2d_t chars;
+  buffer2d_u8_t chars;
   const int width;
   const int height;
 

@@ -4,7 +4,7 @@
 
 namespace librl {
 
-bool raycast(const int2 &s, const int2 &e, const uint8_t mask, const buffer2d_t &map) {
+bool raycast(const int2 &s, const int2 &e, const uint8_t mask, const buffer2d_u8_t &map) {
 
   const int32_t incrementX = (e.x > s.x) ? 1 : -1;
   const int32_t incrementY = (e.y > s.y) ? 1 : -1;

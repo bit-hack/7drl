@@ -47,6 +47,9 @@ struct program_t {
   }
 
   void on_event(const SDL_Event &event) {
+
+    using namespace librl;
+
     switch (event.type) {
     case SDL_QUIT:
       active = false;
@@ -66,13 +69,18 @@ struct program_t {
         return;
       }
       switch (event.key.keysym.sym) {
-      case SDLK_LEFT:  game.input_event_push(librl::input_event_t{ librl::input_event_t::key_left  }); break;
-      case SDLK_RIGHT: game.input_event_push(librl::input_event_t{ librl::input_event_t::key_right }); break;
-      case SDLK_UP:    game.input_event_push(librl::input_event_t{ librl::input_event_t::key_up    }); break;
-      case SDLK_DOWN:  game.input_event_push(librl::input_event_t{ librl::input_event_t::key_down  }); break;
+      case SDLK_LEFT:  game.input_event_push(input_event_t{ input_event_t::key_left  }); break;
+      case SDLK_RIGHT: game.input_event_push(input_event_t{ input_event_t::key_right }); break;
+      case SDLK_UP:    game.input_event_push(input_event_t{ input_event_t::key_up    }); break;
+      case SDLK_DOWN:  game.input_event_push(input_event_t{ input_event_t::key_down  }); break;
       }
       break;
     case SDL_MOUSEBUTTONUP:
+      game.input_event_push(input_event_t{
+        (event.button.button == 0) ? input_event_t::mouse_lmb : input_event_t::mouse_rmb,
+        event.button.x / 8,
+        event.button.y / 8
+        });
       break;
     }
   }

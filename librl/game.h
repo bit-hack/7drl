@@ -53,7 +53,7 @@ struct game_t {
     // clear the old map entities entirely
     entities.clear();
 
-    map.reset(new buffer2d_t(w, h));
+    map.reset(new buffer2d_u8_t(w, h));
     // run the map generator
     if (generator) {
       generator->generate();
@@ -70,7 +70,7 @@ struct game_t {
     render();
   }
 
-  buffer2d_t &map_get() {
+  buffer2d_u8_t &map_get() {
     assert(map);
     return *map;
   }
@@ -178,7 +178,7 @@ protected:
   std::deque<input_event_t> input;
   std::vector<entity_t *> entities;
   std::unique_ptr<map_generator_t> generator;
-  std::unique_ptr<buffer2d_t> map;
+  std::unique_ptr<buffer2d_u8_t> map;
   std::unique_ptr<console_t> console;
   std::unique_ptr<pfield_t> pfield;
   std::unique_ptr<bitset2d_t> fog;

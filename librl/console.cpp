@@ -12,7 +12,7 @@ void console_t::render(uint32_t *dst, uint32_t pitch, uint32_t chars_x, uint32_t
   const uint32_t bg = 0x202020;
   for (uint32_t y = 0; y < chars_y; ++y) {
     for (uint32_t x = 0; x < chars_x; ++x) {
-      const buffer2d_t::type_t ch = chars.get(x, y);
+      const buffer2d_u8_t::type ch = chars.get(x, y);
       font_draw_glyph_8x8(dst + x * 8, pitch, ch, fg, bg);
     }
     dst += pitch * 8;
