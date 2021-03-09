@@ -45,8 +45,10 @@ struct buffer2d_t {
     return get(p.x, p.y);
   }
 
-  void clear(uint8_t tile) {
-    memset(data.get(), tile, width * height);
+  void clear(type_t val) {
+    for (uint32_t i = 0; i < width * height; ++i) {
+      data[i] = val;
+    }
   }
 
   const uint32_t width, height;

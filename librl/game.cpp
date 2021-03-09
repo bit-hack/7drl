@@ -72,30 +72,30 @@ void game_t::render_map() {
   const int32_t px = player->pos.x;
   const int32_t py = player->pos.y;
 
+  static const std::array<char, 128> ramp = {
+    '.', '#', '?'
+  };
+
   for (uint32_t y = 0; y < m.height; ++y) {
     for (uint32_t x = 0; x < m.width; ++x) {
       auto &cell = m.get(x, y);
-#if 1
-      // XXX: dont do this in the librl
-      char ch = (cell == 0) ? '.' : '#';
+
+      uint8_t &ch = c.chars.get(x, y);
+
+      ch = ramp[cell];
       const int2 p = int2{ int32_t(x), int32_t(y) };
 
       const bool seen = raycast(player->pos, p, 1, m);
       if (seen) {
-        fog->set(p);
+        c.attrib.get(x, y) = 0xfac4d1;
+        fog->set(int2{ int(x), int(y) });
       }
       else {
+        c.attrib.get(x, y) = 0x404155;
         if (!fog->get(p)) {
           ch = ' ';
         }
-        else {
-          ch = (cell == 0) ? ' ' : ch;
-        }
       }
-      c.chars.get(x, y) = ch;
-#else
-      c.chars.get(x, y) = '0' + pfield->read().get(x, y);
-#endif
     }
   }
 }

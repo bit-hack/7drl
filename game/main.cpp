@@ -38,6 +38,9 @@ struct program_t {
     if (!screen) {
       return false;
     }
+
+    SDL_WM_SetCaption("TinyRL", nullptr);
+
     active = true;
     width = w;
     height = h;

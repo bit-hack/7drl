@@ -31,6 +31,7 @@ struct ent_player_t : public librl::entity_actor_t {
 
   void render() override {
     auto &con = game.console_get();
+    con.attrib.get(pos.x, pos.y) = 0xf7f28e;
     con.chars.get(pos.x, pos.y) = '@';
   }
 
@@ -67,6 +68,7 @@ struct ent_goblin_t : public librl::entity_actor_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = 0x46803a;
       con.chars.get(pos.x, pos.y) = 'g';
     }
   }
@@ -96,6 +98,7 @@ struct ent_potion_t : public librl::entity_item_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = 0x463a80;
       con.chars.get(pos.x, pos.y) = 'p';
     }
   }
@@ -132,6 +135,7 @@ struct ent_stairs_t : public librl::entity_item_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = 0xf7f28e;
       con.chars.get(pos.x, pos.y) = '=';
     }
   }

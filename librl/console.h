@@ -7,12 +7,15 @@ namespace librl {
 struct console_t {
 
   console_t(uint32_t w, uint32_t h)
-    : chars(w, h)
+    : attrib(w, h)
+    , chars(w, h)
     , width(w)
     , height(h)
     , caret{0, 0}
   {
     window_reset();
+    chars.clear(' ');
+    attrib.clear(0x33f080);
   }
 
   void render(uint32_t *dst, uint32_t pitch, uint32_t chars_x,
@@ -44,6 +47,7 @@ struct console_t {
     return caret;
   }
 
+  buffer2d_u32_t attrib;
   buffer2d_u8_t chars;
   const int width;
   const int height;
