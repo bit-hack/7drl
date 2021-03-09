@@ -58,7 +58,7 @@ struct program_t {
         active = false;
         break;
       case SDLK_SPACE:
-        game.map_create(width / 8, height / 8);
+        game.map_next();
         break;
       }
 
@@ -100,7 +100,7 @@ struct program_t {
   void render_x1() {
     assert(screen);
     uint32_t *d0 = (uint32_t*)screen->pixels;
-    const uint32_t pitch = width * 2;
+    const uint32_t pitch = width;
     game.console_get().render(d0, pitch, width / 8, height / 8);
     SDL_Flip(screen);
   }
@@ -158,11 +158,11 @@ int main(int argc, char *args[]) {
   program_t prog{ game };
 
   if (!prog.init(game::screen_width,
-                 game::screen_height, 2)) {
+                 game::screen_height, 1)) {
     return 1;
   }
 
-  game.map_create(prog.width / 8, prog.height / 8);
+  game.map_create(prog.width / 8, (prog.height / 8) - 2);
 
   while (prog.active) {
     prog.tick();

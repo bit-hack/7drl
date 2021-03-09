@@ -43,7 +43,7 @@ bool ent_player_t::turn() {
 
 void ent_player_t::interact_with(librl::entity_t *ent) {
   assert(ent);
-  if (ent->is_type<ent_test_t>()) {
+  if (ent->is_type<ent_goblin_t>()) {
     attack(static_cast<librl::entity_actor_t*>(ent));
   }
   if (ent->is_subclass<librl::entity_item_t>()) {
@@ -52,7 +52,7 @@ void ent_player_t::interact_with(librl::entity_t *ent) {
   }
 }
 
-bool ent_test_t::turn() {
+bool ent_goblin_t::turn() {
   const int32_t map_w = game.map_get().width;
   const int32_t map_h = game.map_get().height;
 
@@ -92,7 +92,7 @@ bool ent_test_t::turn() {
   return true;
 }
 
-void ent_test_t::interact_with(entity_t *e) {
+void ent_goblin_t::interact_with(entity_t *e) {
   switch (e->type) {
   case ent_type_player:
     attack(static_cast<entity_actor_t*>(e));

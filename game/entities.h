@@ -39,11 +39,11 @@ struct ent_player_t : public librl::entity_actor_t {
   bool turn() override;
 };
 
-struct ent_test_t : public librl::entity_actor_t {
+struct ent_goblin_t : public librl::entity_actor_t {
 
-  static const uint32_t TYPE = ent_type_test;
+  static const uint32_t TYPE = ent_type_goblin;
 
-  ent_test_t(librl::game_t &game)
+  ent_goblin_t(librl::game_t &game)
     : librl::entity_actor_t(TYPE, game)
     , seed(game.random())
   {
@@ -67,7 +67,7 @@ struct ent_test_t : public librl::entity_actor_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
-      con.chars.get(pos.x, pos.y) = 'H';
+      con.chars.get(pos.x, pos.y) = 'g';
     }
   }
 
@@ -102,7 +102,7 @@ struct ent_potion_t : public librl::entity_item_t {
 
   void use_on(entity_t *e) {
     if (e->is_type<ent_player_t>()) {
-      game.message_post("%s used %s to recovered %u health", e->name.c_str(),
+      game.message_post("%s used %s to recover %u hp", e->name.c_str(),
           name.c_str(), recovery);
       static_cast<ent_player_t*>(e)->hp += recovery;
       game.entity_remove(this);

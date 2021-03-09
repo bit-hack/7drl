@@ -43,6 +43,7 @@ struct game_t {
 
   game_t()
     : player(nullptr)
+    , level(1)
     , seed(12345)
     , generate_new_map(false)
   {
@@ -78,6 +79,7 @@ struct game_t {
 
   void console_create(uint32_t w, uint32_t h) {
     console.reset(new console_t(w, h));
+    console->fill(' ');
   }
 
   console_t &console_get() {
@@ -154,6 +156,7 @@ struct game_t {
 
   void map_next() {
     generate_new_map = true;
+    ++level;
   }
 
   gc_t gc;
@@ -165,6 +168,11 @@ protected:
 
   void post_turn();
 
+  void render_map();
+  void render_entities();
+  void render_hud();
+
+  int level;
   uint64_t seed;
 
   std::deque<input_event_t> input;

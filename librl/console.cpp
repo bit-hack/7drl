@@ -1,3 +1,6 @@
+#include <cstdarg>
+#include <array>
+
 #include "console.h"
 #include "font.h"
 #include "common.h"
@@ -74,6 +77,32 @@ void console_t::window_clear() {
   for (int32_t y = window_min.y; y < window_max.y; ++y) {
     for (int32_t x = window_min.x; x < window_max.x; ++x) {
       chars.get(x, y) = ' ';
+    }
+  }
+}
+
+void console_t::print(const char *fmt, ...) {
+  std::array<char, 1024> temp;
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(temp.data(), temp.size(), fmt, args);
+  va_end(args);
+  temp.back() = '\0';
+  puts(temp.data());
+}
+
+void console_t::fill(const int2 &min, const int2 &max, char ch) {
+  for (int y = min.y; y < max.y; ++y) {
+    for (int x = min.x; x < max.x; ++x) {
+      chars.get(x, y) = ch;
+    }
+  }
+}
+
+void console_t::fill(char ch) {
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      chars.get(x, y) = ch;
     }
   }
 }

@@ -10,14 +10,14 @@ enum {
 enum {
   ent_type_none = 0,
   ent_type_player,
-  ent_type_test,
+  ent_type_goblin,
   ent_type_potion,
   ent_type_stairs,
 };
 
 enum {
-  screen_width = 320,
-  screen_height = 240
+  screen_width  = 512,
+  screen_height = 512
 };
 
 }  // namespace game

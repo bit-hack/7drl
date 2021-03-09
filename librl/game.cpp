@@ -64,14 +64,10 @@ void game_t::post_turn() {
   render();
 }
 
-void game_t::render() {
+void game_t::render_map() {
   assert(map && console);
   auto &m = *map;
   auto &c = *console;
-
-  if (!player) {
-    return;
-  }
 
   const int32_t px = player->pos.x;
   const int32_t py = player->pos.y;
@@ -102,12 +98,40 @@ void game_t::render() {
 #endif
     }
   }
+}
 
-  // update entities
+void game_t::render_entities() {
   for (auto &e : entities) {
     assert(e);
     e->render();
   }
+}
+
+void game_t::render_hud() {
+  assert(console);
+  auto &c = *console;
+
+  assert(player);
+  assert(player->is_subclass<entity_actor_t>());
+
+  entity_actor_t *act = static_cast<entity_actor_t*>(player);
+
+  console->fill(int2{0, c.height - 1}, int2{c.width, c.height}, ' ');
+
+  console->caret_set(int2{ 0, c.height - 1 });
+  console->print("level: %d  ", level);
+
+  console->caret_set(int2{ 10, c.height - 1 });
+  console->print("hp: %d  ", act->hp);
+}
+
+void game_t::render() {
+  if (!player) {
+    return;
+  }
+  render_map();
+  render_entities();
+  render_hud();
 }
 
 entity_t *game_t::entity_find(const int2 &p) const {
@@ -120,13 +144,19 @@ entity_t *game_t::entity_find(const int2 &p) const {
 }
 
 void game_t::message_post(const char *str, ...) {
-  std::array<char, 1024> buf;
+  assert(console);
+  auto &c = *console;
+
+  std::array<char, 1024> temp;
   va_list args;
   va_start(args, str);
-  vsnprintf(buf.data(), buf.size(), str, args);
+  vsnprintf(temp.data(), temp.size(), str, args);
   va_end(args);
-  buf.back() = '\0';
-  printf("%s\n", buf.data());
+  temp.back() = '\0';
+
+  c.fill(int2{ 0, c.height - 2 }, int2{ c.width, c.height - 1 }, ' ');
+  c.caret_set(int2{ 0, c.height - 2 });
+  c.puts(temp.data());
 }
 
 }  // namespace librl

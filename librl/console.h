@@ -8,6 +8,8 @@ struct console_t {
 
   console_t(uint32_t w, uint32_t h)
     : chars(w, h)
+    , width(w)
+    , height(h)
     , caret{0, 0}
   {
     window_reset();
@@ -24,6 +26,12 @@ struct console_t {
     }
   }
 
+  void fill(const int2 &min, const int2 &max, char ch);
+
+  void fill(char ch);
+
+  void print(const char *fmt, ...);
+
   void window_set(const int2 &wmin, const int2 &wmax);
 
   void window_reset();
@@ -37,6 +45,8 @@ struct console_t {
   }
 
   buffer2d_t chars;
+  const int width;
+  const int height;
 
 protected:
   // scroll the window up one row

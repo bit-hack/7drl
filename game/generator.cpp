@@ -87,7 +87,7 @@ void generator_2_t::place_entity(librl::entity_t *e) {
 void generator_2_t::place_items() {
   auto &map = game.map_get();
   for (int32_t i = 0; i < 6; ++i) {
-    librl::entity_t *e = game.gc.alloc<game::ent_test_t>(game);
+    librl::entity_t *e = game.gc.alloc<game::ent_goblin_t>(game);
     place_entity(e);
   }
   for (int32_t i = 0; i < 4; ++i) {
