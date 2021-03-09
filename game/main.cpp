@@ -158,6 +158,80 @@ struct game_7drl_t : public librl::game_t {
     assert(!player);
     player = gc.alloc<ent_player_t>(*this);
   }
+
+  void post_turn() override {
+
+    if (player) {
+
+      bool on_grass = (map_get().get(player->pos) == tile_grass);
+
+      pfield->drop(player->pos.x, player->pos.y, on_grass ? 3 : 6);
+    }
+
+    game_t::post_turn();
+  }
+
+  void game_t::render_hud() {
+    using namespace librl;
+    assert(console);
+    auto &c = *console;
+
+    assert(player && player->is_type<ent_player_t>());
+    ent_player_t *p = static_cast<ent_player_t*>(player);
+
+    console->fill(int2{ 0, c.height - 1 }, int2{ c.width, c.height }, ' ');
+
+    console->caret_set(int2{ 0, c.height - 1 });
+    console->print("level: %d  ", level);
+
+    console->caret_set(int2{ 10, c.height - 1 });
+    console->print("hp: %d  ", p->hp);
+
+    console->caret_set(int2{ 20, c.height - 1 });
+    console->print("gold: %d  ", p->gold);
+  }
+
+  void render_map() override {
+    using namespace librl;
+    assert(map && console && walls);
+    auto &m = *map;
+    auto &c = *console;
+
+    const int32_t px = player->pos.x;
+    const int32_t py = player->pos.y;
+
+    static const std::array<char, 128> ramp = {
+      '.', '#', '"', '?'
+    };
+
+    static const std::array<uint32_t, 128> rgb = {
+      0xfac4d1, 0xfac4d1, 0xbad4b1, 0xfac4d1
+    };
+
+    for (uint32_t y = 0; y < m.height; ++y) {
+      for (uint32_t x = 0; x < m.width; ++x) {
+        auto &cell = m.get(x, y);
+
+        uint8_t &ch = c.chars.get(x, y);
+
+        uint32_t clr = rgb[cell];
+        ch = ramp[cell];
+        const int2 p = int2{ int32_t(x), int32_t(y) };
+
+        const bool seen = raycast(player->pos, p, *walls);
+        if (seen) {
+          c.attrib.get(x, y) = clr;
+          fog->set(int2{ int(x), int(y) });
+        }
+        else {
+          c.attrib.get(x, y) = (clr >> 2) & 0x3f3f3f;
+          if (!fog->get(p)) {
+            ch = ' ';
+          }
+        }
+      }
+    }
+  }
 };
 
 } // namespace game

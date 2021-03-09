@@ -10,4 +10,12 @@ inline uint64_t random(uint64_t &seed) {
   return seed;
 }
 
+inline uint64_t random(uint64_t &seed, uint64_t max) {
+  return random(seed) % max;
+}
+
+inline bool random_bool(uint64_t &seed) {
+  return (random(seed) & 0x8000) == 0;
+}
+
 }  // namespace librl

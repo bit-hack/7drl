@@ -2,6 +2,7 @@
 #include "random.h"
 #include "gc.h"
 #include "common.h"
+#include "perlin.h"
 
 // game
 #include "generator.h"
@@ -29,9 +30,9 @@ void generator_2_t::generate() {
   }
   place_walls();
   mask_border();
-
   place_player();
   place_items();
+  place_grass();
 }
 
 void generator_2_t::place_rect() {
@@ -59,7 +60,12 @@ void generator_2_t::place_rect() {
 }
 
 void generator_2_t::place_walls() {
+  using namespace librl;
   auto &map = game.map_get();
+
+  auto &walls = game.walls_get();
+  walls.fill();
+
   const int32_t map_w = map.width;
   const int32_t map_h = map.height;
   for (int32_t y = 0; y < map_h-1; ++y) {
@@ -67,7 +73,14 @@ void generator_2_t::place_walls() {
       auto &a = map.get(x, y + 0);
       auto &b = map.get(x, y + 1);
       auto &c = map.get(x + 1, y);
-      a = (a != b || a != c) && (rand(4) > 0) ? tile_wall : tile_floor;
+
+      if ((a != b || a != c) && (rand(4) > 0)) {
+        a = tile_wall;
+      }
+      else {
+        walls.clear(int2{ x, y });
+        a = tile_floor;
+      }
     }
   }
 }
@@ -94,6 +107,10 @@ void generator_2_t::place_items() {
     librl::entity_t *e = game.gc.alloc<game::ent_potion_t>(game);
     place_entity(e);
   }
+  for (int32_t i = 0; i < 4; ++i) {
+    librl::entity_t *e = game.gc.alloc<game::ent_gold_t>(game);
+    place_entity(e);
+  }
   {
     librl::entity_t *e = game.gc.alloc<game::ent_stairs_t>(game);
     place_entity(e);
@@ -114,16 +131,50 @@ void generator_2_t::place_player() {
 }
 
 void generator_2_t::mask_border() {
+  using namespace librl;
   auto &map = game.map_get();
+  auto &walls = game.walls_get();
   const int32_t map_w = map.width;
   const int32_t map_h = map.height;
   for (int32_t y = 0; y < map_h; ++y) {
     map.get(0, y) = tile_wall;
     map.get(map_w - 1, y) = tile_wall;
+    walls.set(int2{ 0, y });
+    walls.set(int2{ map_w - 1, y });
   }
   for (int32_t x = 0; x < map_w; ++x) {
     map.get(x, 0) = tile_wall;
     map.get(x, map_h - 1) = tile_wall;
+    walls.set(int2{ x, 0 });
+    walls.set(int2{ x, map_h - 1 });
+  }
+}
+
+void generator_2_t::place_grass() {
+  librl::perlin_t perlin{ uint32_t(seed) };
+
+  const uint32_t num_samples = 10;
+
+  uint32_t norm = 0;
+  for (uint32_t i = 0; i < num_samples; ++i) {
+    const auto p = rand_map_coord();
+    norm += perlin.sample2d(p.x, p.y);
+  }
+  norm /= num_samples;
+
+  auto &map = game.map_get();
+  const int32_t map_w = map.width;
+  const int32_t map_h = map.height;
+  for (int32_t y = 0; y < map_h; ++y) {
+    for (int32_t x = 0; x < map_w; ++x) {
+      uint8_t &c = map.get(x, y);
+      if (c == tile_floor) {
+        uint32_t v = librl::max(0, (int32_t(perlin.sample2d(x, y)) - int32_t(norm)));
+        if (v > 64) {
+          c = tile_grass;
+        }
+      }
+    }
   }
 }
 

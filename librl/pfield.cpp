@@ -9,7 +9,7 @@ void pfield_t::update() {
   for (uint32_t y = 1; y < r.height - 1; ++y) {
     for (uint32_t x = 1; x < r.width - 1; ++x) {
 
-      if (map.get(x, y) == wall_tile) {
+      if (walls.get(int2{ int(x), int(y) })) {
         w.get(x, y) = 0;
         continue;
       }

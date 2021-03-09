@@ -55,6 +55,12 @@ struct bitset2d_t {
     }
   }
 
+  void fill() {
+    for (int32_t i = 0; i < (width * height) / 8; ++i) {
+      data[i] = 0xff;
+    }
+  }
+
   const int32_t width;
   const int32_t height;
 

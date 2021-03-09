@@ -21,6 +21,7 @@ struct ent_player_t : public librl::entity_actor_t {
   {
     name = "player";
     hp = 100;
+    gold = 0;
   }
 
   int32_t get_accuracy() const override { return 50; }
@@ -31,13 +32,15 @@ struct ent_player_t : public librl::entity_actor_t {
 
   void render() override {
     auto &con = game.console_get();
-    con.attrib.get(pos.x, pos.y) = 0xf7f28e;
+    con.attrib.get(pos.x, pos.y) = colour_player;
     con.chars.get(pos.x, pos.y) = '@';
   }
 
   void interact_with(entity_t *e);
 
   bool turn() override;
+
+  uint32_t gold;
 };
 
 struct ent_goblin_t : public librl::entity_actor_t {
@@ -58,17 +61,13 @@ struct ent_goblin_t : public librl::entity_actor_t {
   int32_t get_evasion() const  override { return 0;  }
   int32_t get_crit() const     override { return 0;  }
 
-  void _enumerate(librl::gc_enum_t &func) override {
-    // todo
-  }
-
   void render() override {
     auto &con = game.console_get();
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
-      con.attrib.get(pos.x, pos.y) = 0x46803a;
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_goblin;
       con.chars.get(pos.x, pos.y) = 'g';
     }
   }
@@ -98,7 +97,7 @@ struct ent_potion_t : public librl::entity_item_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
-      con.attrib.get(pos.x, pos.y) = 0x463a80;
+      con.attrib.get(pos.x, pos.y) = colour_potion;
       con.chars.get(pos.x, pos.y) = 'p';
     }
   }
@@ -134,8 +133,8 @@ struct ent_stairs_t : public librl::entity_item_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
-      con.attrib.get(pos.x, pos.y) = 0xf7f28e;
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_stairs;
       con.chars.get(pos.x, pos.y) = '=';
     }
   }
@@ -144,6 +143,39 @@ struct ent_stairs_t : public librl::entity_item_t {
     if (e->is_type<ent_player_t>()) {
       game.message_post("%s proceeds deeper into the dungeon", e->name.c_str());
       game.map_next();
+    }
+  }
+
+  uint64_t seed;
+};
+
+struct ent_gold_t : public librl::entity_item_t {
+
+  static const uint32_t TYPE = ent_type_gold;
+
+  ent_gold_t(librl::game_t &game)
+    : librl::entity_item_t(TYPE, game)
+    , seed(game.random())
+  {
+    name = "gold";
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (game.player) {
+      if (librl::raycast(game.player->pos, pos, game.walls_get())) {
+        con.attrib.get(pos.x, pos.y) = colour_gold;
+        con.chars.get(pos.x, pos.y) = '$';
+      }
+    }
+  }
+
+  void use_on(entity_t *e) {
+    if (e->is_type<ent_player_t>()) {
+      int value = int(15 + librl::random(seed, 15));
+      game.message_post("%s gained %d gold", e->name.c_str(), value);
+      static_cast<ent_player_t*>(e)->gold += value;
+      game.entity_remove(this);
     }
   }
 

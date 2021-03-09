@@ -1,5 +1,6 @@
 #pragma once
 #include "buffer2d.h"
+#include "bitset2d.h"
 
 namespace librl {
 
@@ -7,8 +8,8 @@ struct pfield_t {
 
   typedef buffer2d_t<uint8_t> buffer_t;
 
-  pfield_t(buffer_t &m, uint8_t tile)
-    : wall_tile(tile)
+  pfield_t(buffer_t &m, const bitset2d_t &walls)
+    : walls(walls)
     , map(m)
     , state(0)
     , a(new buffer_t(m.width, m.height))
@@ -38,7 +39,7 @@ struct pfield_t {
 
 protected:
 
-  const uint8_t wall_tile;
+  const bitset2d_t &walls;
 
   uint8_t sample(uint32_t x, uint32_t y) const;
 

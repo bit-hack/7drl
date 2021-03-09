@@ -30,8 +30,8 @@ bool ent_player_t::turn() {
     return true;
   }
 
-  // if moving to another floor tile
-  if (game.map_get().get(np) == tile_floor) {
+  // we can move if its not a wall
+  if (!game.walls_get().get(np)) {
     pos = np;
     return true;
   }
@@ -58,32 +58,34 @@ bool ent_goblin_t::turn() {
 
   librl::int2 np = pos;
 
-#if 1
   int32_t dx = 0;
   int32_t dy = 0;
   game.pfield_get().diff(pos.x, pos.y, dx, dy);
-
-  if (librl::abs(dx) > librl::abs(dy)) {
-    np.x += dx;
+  if (dx != 0 || dy != 0) {
+    if (librl::abs(dx) > librl::abs(dy)) {
+      np.x += dx;
+    }
+    else {
+      np.y += dy;
+    }
   }
   else {
-    np.y += dy;
+    if (librl::random(seed, 3) == 0) {
+      switch (librl::random(seed) & 3) {
+      case 0: np.x < map_w - 1 ? ++np.x : 0; break;
+      case 1: np.x > 0 ? --np.x : 0; break;
+      case 2: np.y < map_h - 1 ? ++np.y : 0; break;
+      case 3: np.y > 0 ? --np.y : 0; break;
+      }
+    }
   }
-#else
-  switch (librl::random(seed) & 3) {
-  case 0: np.x < map_w - 1 ? ++np.x : 0; break;
-  case 1: np.x > 0         ? --np.x : 0; break;
-  case 2: np.y < map_h - 1 ? ++np.y : 0; break;
-  case 3: np.y > 0         ? --np.y : 0; break;
-  }
-#endif
 
   if (entity_t *ent = game.entity_find(np)) {
     interact_with(ent);
     return true;
   }
 
-  if (game.map_get().get(np) == tile_floor) {
+  if (!game.walls_get().get(np)) {
     pos = np;
     return true;
   }

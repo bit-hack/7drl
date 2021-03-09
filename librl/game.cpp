@@ -4,6 +4,7 @@
 
 #include "game.h"
 #include "raycast.h"
+#include "perlin.h"
 
 namespace librl {
 
@@ -36,9 +37,6 @@ void game_t::tick() {
 }
 
 void game_t::post_turn() {
-  if (player) {
-    pfield->drop(player->pos.x, player->pos.y, 5);
-  }
   // update the potential field
   assert(pfield);
   pfield->update();
@@ -64,42 +62,6 @@ void game_t::post_turn() {
   render();
 }
 
-void game_t::render_map() {
-  assert(map && console);
-  auto &m = *map;
-  auto &c = *console;
-
-  const int32_t px = player->pos.x;
-  const int32_t py = player->pos.y;
-
-  static const std::array<char, 128> ramp = {
-    '.', '#', '?'
-  };
-
-  for (uint32_t y = 0; y < m.height; ++y) {
-    for (uint32_t x = 0; x < m.width; ++x) {
-      auto &cell = m.get(x, y);
-
-      uint8_t &ch = c.chars.get(x, y);
-
-      ch = ramp[cell];
-      const int2 p = int2{ int32_t(x), int32_t(y) };
-
-      const bool seen = raycast(player->pos, p, 1, m);
-      if (seen) {
-        c.attrib.get(x, y) = 0xfac4d1;
-        fog->set(int2{ int(x), int(y) });
-      }
-      else {
-        c.attrib.get(x, y) = 0x404155;
-        if (!fog->get(p)) {
-          ch = ' ';
-        }
-      }
-    }
-  }
-}
-
 void game_t::render_entities() {
   for (auto &e : entities) {
     assert(e);
@@ -107,22 +69,21 @@ void game_t::render_entities() {
   }
 }
 
-void game_t::render_hud() {
-  assert(console);
-  auto &c = *console;
-
-  assert(player);
-  assert(player->is_subclass<entity_actor_t>());
-
-  entity_actor_t *act = static_cast<entity_actor_t*>(player);
-
-  console->fill(int2{0, c.height - 1}, int2{c.width, c.height}, ' ');
-
-  console->caret_set(int2{ 0, c.height - 1 });
-  console->print("level: %d  ", level);
-
-  console->caret_set(int2{ 10, c.height - 1 });
-  console->print("hp: %d  ", act->hp);
+void game_t::map_create(uint32_t w, uint32_t h) {
+  // clear the old map entities entirely
+  entities.clear();
+  // create various maps and arrays
+  fog.reset(new bitset2d_t(w, h));
+  walls.reset(new bitset2d_t(w, h));
+  map.reset(new buffer2d_u8_t(w, h));
+  // run the map generator
+  if (generator) {
+    generator->generate();
+  }
+  // create a potential field
+  assert(walls);
+  pfield.reset(new pfield_t(*map, *walls));
+  render();
 }
 
 void game_t::render() {

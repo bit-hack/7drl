@@ -49,26 +49,7 @@ struct game_t {
   {
   }
 
-  void map_create(uint32_t w, uint32_t h) {
-    // clear the old map entities entirely
-    entities.clear();
-
-    map.reset(new buffer2d_u8_t(w, h));
-    // run the map generator
-    if (generator) {
-      generator->generate();
-    }
-
-    // XXX: FIXME
-    const uint8_t wall_tile = 1;
-
-    // create a potential field
-    pfield.reset(new pfield_t(*map, wall_tile));
-
-    fog.reset(new bitset2d_t(map->width, map->height));
-
-    render();
-  }
+  void map_create(uint32_t w, uint32_t h);
 
   buffer2d_u8_t &map_get() {
     assert(map);
@@ -85,6 +66,11 @@ struct game_t {
   console_t &console_get() {
     assert(console);
     return *console;
+  }
+
+  bitset2d_t &walls_get() {
+    assert(walls);
+    return *walls;
   }
 
   entity_t *entity_add(entity_t *ent) {
@@ -166,11 +152,11 @@ protected:
 
   bool generate_new_map;
 
-  void post_turn();
+  virtual void post_turn();
 
-  void render_map();
+  virtual void render_map() = 0;
+  virtual void render_hud() = 0;
   void render_entities();
-  void render_hud();
 
   int level;
   uint64_t seed;
@@ -182,6 +168,7 @@ protected:
   std::unique_ptr<console_t> console;
   std::unique_ptr<pfield_t> pfield;
   std::unique_ptr<bitset2d_t> fog;
+  std::unique_ptr<bitset2d_t> walls;
 };
 
 } // namespace librl
