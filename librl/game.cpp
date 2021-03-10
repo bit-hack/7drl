@@ -8,7 +8,7 @@
 
 namespace librl {
 
-void game_t::tick() {
+void game_t::tick_game() {
   // update entities
   for (auto &e : entities) {
     assert(e);

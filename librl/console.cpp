@@ -29,7 +29,8 @@ void console_t::putc(char c) {
     caret.x = window_min.x; // reset x
     break;
   default:
-    chars.get(caret.x, caret.y) = c; // write char
+    chars.get(caret) = c; // write char
+    attrib.get(caret) = colour;
     ++caret.x;
     if (caret.x >= window_max.x) {
       caret.x = window_min.x; // reset x

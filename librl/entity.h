@@ -77,8 +77,9 @@ struct entity_item_t : public entity_t {
 
   static const subclass_t SUBCLASS = ent_subclass_item;
 
-  entity_item_t(const uint32_t type, game_t &game)
+  entity_item_t(const uint32_t type, game_t &game, bool can_pickup)
     : entity_t(type, SUBCLASS, game)
+    , can_pickup(can_pickup)
   {
   }
 
@@ -87,6 +88,10 @@ struct entity_item_t : public entity_t {
   }
 
   virtual void use_on(entity_t *e) = 0;
+
+  virtual void picked_up(entity_t *by);
+
+  const bool can_pickup;
 };
 
 } // librl

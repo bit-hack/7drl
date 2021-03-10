@@ -1,41 +1,37 @@
+#include "game.h"
 #include "entities.h"
 
 namespace game {
 
+ent_player_t::ent_player_t(librl::game_t &game)
+  : librl::entity_actor_t(TYPE, game)
+  , user_dir{ 0, 0 }
+{
+  name = "hero";
+  hp = 100;
+  gold = 0;
+}
+
+void ent_player_t::_enumerate(librl::gc_enum_t &func) {
+  inventory._enumerate(func);
+}
+
 bool ent_player_t::turn() {
-  const int32_t map_w = game.map_get().width;
-  const int32_t map_h = game.map_get().height;
-  librl::input_event_t event;
-  if (!game.input_event_pop(event)) {
-    return false;
-  }
-
-  librl::int2 np = pos;
-
-  switch (event.type) {
-  case librl::input_event_t::key_up:    np.y > 0         ? --np.y : 0; break;
-  case librl::input_event_t::key_down:  np.y < map_h - 1 ? ++np.y : 0; break;
-  case librl::input_event_t::key_left:  np.x > 0         ? --np.x : 0; break;
-  case librl::input_event_t::key_right: np.x < map_w - 1 ? ++np.x : 0; break;
-  }
-
+  const librl::int2 np{ pos.x + user_dir.x, pos.y + user_dir.y };
   if (np == pos) {
     // no move selected
     return false;
   }
-
   // moving onto an entity which may count as an attack or pickup
   if (entity_t *ent = game.entity_find(np)) {
     interact_with(ent);
     return true;
   }
-
   // we can move if its not a wall
   if (!game.walls_get().get(np)) {
     pos = np;
     return true;
   }
-
   // not yet finished turn
   // ...
   return false;
@@ -43,19 +39,33 @@ bool ent_player_t::turn() {
 
 void ent_player_t::interact_with(librl::entity_t *ent) {
   assert(ent);
-  if (ent->is_type<ent_goblin_t>()) {
+
+  const bool is_enemy = ent->is_type<ent_goblin_t>();
+
+  if (is_enemy) {
     attack(static_cast<librl::entity_actor_t*>(ent));
+    return;
   }
   if (ent->is_subclass<librl::entity_item_t>()) {
     librl::entity_item_t *item = static_cast<librl::entity_item_t*>(ent);
-    item->use_on(this);
+    if (item->can_pickup) {
+      if (inventory.item_add(ent)) {
+        static_cast<librl::entity_item_t*>(ent)->picked_up(this);
+        // remove from the game world
+        game.entity_remove(item);
+      }
+      else {
+        game.message_post("%s's inventory full", name.c_str());
+      }
+    }
+    else {
+      // use right now
+      item->use_on(this);
+    }
   }
 }
 
 bool ent_goblin_t::turn() {
-  const int32_t map_w = game.map_get().width;
-  const int32_t map_h = game.map_get().height;
-
   librl::int2 np = pos;
 
   int32_t dx = 0;
@@ -72,10 +82,10 @@ bool ent_goblin_t::turn() {
   else {
     if (librl::random(seed, 3) == 0) {
       switch (librl::random(seed) & 3) {
-      case 0: np.x < map_w - 1 ? ++np.x : 0; break;
-      case 1: np.x > 0 ? --np.x : 0; break;
-      case 2: np.y < map_h - 1 ? ++np.y : 0; break;
-      case 3: np.y > 0 ? --np.y : 0; break;
+      case 0: ++np.x; break;
+      case 1: --np.x; break;
+      case 2: ++np.y; break;
+      case 3: --np.y; break;
       }
     }
   }

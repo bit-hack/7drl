@@ -2,6 +2,11 @@
 
 namespace game {
 
+enum screen_t {
+  screen_game,
+  screen_inventory,
+};
+
 enum {
   tile_floor = 0,
   tile_wall,

@@ -33,6 +33,10 @@ struct input_event_t {
     key_right,
     key_enter,
     key_escape,
+    key_i,  // inventory
+    key_u,  // use
+    key_d,  // drop
+    key_e,  // equip
     mouse_lmb,
     mouse_rmb,
   } type;
@@ -56,7 +60,7 @@ struct game_t {
     return *map;
   }
 
-  void render();
+  virtual void render();
 
   void console_create(uint32_t w, uint32_t h) {
     console.reset(new console_t(w, h));
@@ -125,7 +129,11 @@ struct game_t {
     // todo
   }
 
-  void tick();
+  virtual void tick() {
+    tick_game();
+  }
+
+  void tick_game();
 
   uint64_t random() {
     return librl::random(seed);

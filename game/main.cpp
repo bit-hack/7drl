@@ -60,22 +60,21 @@ struct program_t {
     case SDL_KEYUP:
 
       switch (event.key.keysym.sym) {
-      case SDLK_ESCAPE:
-        active = false;
-        break;
       case SDLK_SPACE:
+        // XXX: remove this!
         game.map_next();
         break;
       }
-
-      if (!game.is_player_turn()) {
-        return;
-      }
       switch (event.key.keysym.sym) {
-      case SDLK_LEFT:  game.input_event_push(input_event_t{ input_event_t::key_left  }); break;
-      case SDLK_RIGHT: game.input_event_push(input_event_t{ input_event_t::key_right }); break;
-      case SDLK_UP:    game.input_event_push(input_event_t{ input_event_t::key_up    }); break;
-      case SDLK_DOWN:  game.input_event_push(input_event_t{ input_event_t::key_down  }); break;
+      case SDLK_LEFT:   game.input_event_push(input_event_t{ input_event_t::key_left  }); break;
+      case SDLK_RIGHT:  game.input_event_push(input_event_t{ input_event_t::key_right }); break;
+      case SDLK_UP:     game.input_event_push(input_event_t{ input_event_t::key_up    }); break;
+      case SDLK_DOWN:   game.input_event_push(input_event_t{ input_event_t::key_down  }); break;
+      case SDLK_i:      game.input_event_push(input_event_t{ input_event_t::key_i     }); break;
+      case SDLK_u:      game.input_event_push(input_event_t{ input_event_t::key_u     }); break;
+      case SDLK_d:      game.input_event_push(input_event_t{ input_event_t::key_d     }); break;
+      case SDLK_e:      game.input_event_push(input_event_t{ input_event_t::key_e     }); break;
+      case SDLK_ESCAPE: game.input_event_push(input_event_t{ input_event_t::key_escape}); break;
       }
       break;
     case SDL_MOUSEBUTTONUP:
@@ -150,7 +149,9 @@ namespace game{
 
 struct game_7drl_t : public librl::game_t {
 
-  game_7drl_t() {
+  game_7drl_t()
+    : screen(screen_game)
+  {
     generator.reset(new game::generator_2_t(*this));
   }
 
@@ -160,18 +161,113 @@ struct game_7drl_t : public librl::game_t {
   }
 
   void post_turn() override {
-
     if (player) {
-
       bool on_grass = (map_get().get(player->pos) == tile_grass);
-
-      pfield->drop(player->pos.x, player->pos.y, on_grass ? 3 : 6);
+      pfield->drop(player->pos.x, player->pos.y, on_grass ? 4 : 6);
     }
-
     game_t::post_turn();
   }
 
-  void game_t::render_hud() {
+  void tick_inventory(const librl::int2 &dir, bool use, bool drop) {
+    inv_slot = librl::clamp<int>(0, inv_slot + dir.y, librl::inventory_t::num_slots-1);
+    assert(player && player->is_type<ent_player_t>());
+    ent_player_t &p = *static_cast<ent_player_t*>(player);
+    if (use) {
+      p.inventory.item_use(inv_slot, player);
+    }
+    if (drop) {
+      p.inventory.drop(inv_slot);
+    }
+  }
+
+  void tick() override {
+
+    librl::int2 dir = { 0, 0 };
+    bool use = false;
+    bool drop = false;
+
+    librl::input_event_t event;
+    if (input_event_pop(event)) {
+      switch (event.type) {
+      case librl::input_event_t::key_up:    --dir.y; break;
+      case librl::input_event_t::key_down:  ++dir.y; break;
+      case librl::input_event_t::key_left:  --dir.x; break;
+      case librl::input_event_t::key_right: ++dir.x; break;
+      case librl::input_event_t::key_u: use = true;  break;
+      case librl::input_event_t::key_d: drop = true; break;
+
+      case librl::input_event_t::key_i:
+        if (screen == screen_game) {
+          screen = screen_inventory;
+          console->chars.clear(' ');
+          render();
+        }
+        break;
+
+      case librl::input_event_t::key_escape:
+        if (screen == screen_inventory) {
+          screen = screen_game;
+          render();
+        }
+        break;
+      }
+    }
+
+    if (player) {
+      assert(player->is_type<ent_player_t>());
+      ent_player_t &p = *static_cast<ent_player_t*>(player);
+      p.user_dir = dir;
+    }
+
+    switch (screen) {
+    case screen_game:
+      tick_game();
+      break;
+    case screen_inventory:
+      tick_inventory(dir, use, drop);
+      render();
+      break;
+    }
+  }
+
+  void render() override {
+    switch (screen) {
+    case screen_game:
+      game_t::render();
+      break;
+    case screen_inventory:
+      render_inventory();
+      render_hud();
+      break;
+    }
+  }
+
+  void render_inventory() {
+    if (!player) {
+      return;
+    }
+
+    auto &c = *console;
+    c.colour = 0xfac4d1;
+
+    c.caret_set(librl::int2{ 0, 0 });
+    c.puts("Inventory");
+
+    assert(player && player->is_type<ent_player_t>());
+    ent_player_t *p = static_cast<ent_player_t*>(player);
+
+    auto &inv = p->inventory;
+
+    librl::int2 loc{ 2, 2 };
+    for (int i=0; i<inv.slots().size(); ++i) {
+      const librl::entity_t *e = inv.slots()[i];
+      c.colour = (i == inv_slot) ? 0xfac4d1 : 0xbaa4b1;
+      c.caret_set(librl::int2{ 2, 2 + i });
+      c.puts(e ? e->name.c_str() : "empty");
+    }
+  }
+
+  void render_hud() {
     using namespace librl;
     assert(console);
     auto &c = *console;
@@ -180,6 +276,8 @@ struct game_7drl_t : public librl::game_t {
     ent_player_t *p = static_cast<ent_player_t*>(player);
 
     console->fill(int2{ 0, c.height - 1 }, int2{ c.width, c.height }, ' ');
+
+    console->colour = 0xfac4d1;
 
     console->caret_set(int2{ 0, c.height - 1 });
     console->print("level: %d  ", level);
@@ -232,6 +330,9 @@ struct game_7drl_t : public librl::game_t {
       }
     }
   }
+
+  uint32_t inv_slot;
+  screen_t screen;
 };
 
 } // namespace game

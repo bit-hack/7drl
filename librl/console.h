@@ -12,6 +12,7 @@ struct console_t {
     , width(w)
     , height(h)
     , caret{0, 0}
+    , colour(0xfac4d1)
   {
     window_reset();
     chars.clear(' ');
@@ -51,6 +52,8 @@ struct console_t {
   buffer2d_u8_t chars;
   const int width;
   const int height;
+
+  uint32_t colour;
 
 protected:
   // scroll the window up one row

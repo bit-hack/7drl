@@ -1,5 +1,6 @@
 #pragma
 #include <cstdio>
+#include <deque>
 
 // librl
 #include "entity.h"
@@ -9,6 +10,7 @@
 
 // game
 #include "enums.h"
+#include "inventory.h"
 
 namespace game {
 
@@ -16,13 +18,7 @@ struct ent_player_t : public librl::entity_actor_t {
 
   static const uint32_t TYPE = ent_type_player;
 
-  ent_player_t(librl::game_t &game)
-    : librl::entity_actor_t(TYPE, game)
-  {
-    name = "player";
-    hp = 100;
-    gold = 0;
-  }
+  ent_player_t(librl::game_t &game);
 
   int32_t get_accuracy() const override { return 50; }
   int32_t get_damage() const   override { return 10; }
@@ -40,7 +36,11 @@ struct ent_player_t : public librl::entity_actor_t {
 
   bool turn() override;
 
+  void _enumerate(librl::gc_enum_t &func) override;
+
   uint32_t gold;
+  librl::inventory_t inventory;
+  librl::int2 user_dir;
 };
 
 struct ent_goblin_t : public librl::entity_actor_t {
@@ -84,7 +84,7 @@ struct ent_potion_t : public librl::entity_item_t {
   static const uint32_t TYPE = ent_type_potion;
 
   ent_potion_t(librl::game_t &game)
-    : librl::entity_item_t(TYPE, game)
+    : librl::entity_item_t(TYPE, game, /* can_pickup */ true)
     , recovery(20)
     , seed(game.random())
   {
@@ -107,7 +107,6 @@ struct ent_potion_t : public librl::entity_item_t {
       game.message_post("%s used %s to recover %u hp", e->name.c_str(),
           name.c_str(), recovery);
       static_cast<ent_player_t*>(e)->hp += recovery;
-      game.entity_remove(this);
     }
   }
 
@@ -122,7 +121,7 @@ struct ent_stairs_t : public librl::entity_item_t {
   static const uint32_t TYPE = ent_type_stairs;
 
   ent_stairs_t(librl::game_t &game)
-    : librl::entity_item_t(TYPE, game)
+    : librl::entity_item_t(TYPE, game, /* can_pickup */ false)
     , seed(game.random())
   {
     name = "stairs";
@@ -154,7 +153,7 @@ struct ent_gold_t : public librl::entity_item_t {
   static const uint32_t TYPE = ent_type_gold;
 
   ent_gold_t(librl::game_t &game)
-    : librl::entity_item_t(TYPE, game)
+    : librl::entity_item_t(TYPE, game, /* can_pickup */ false)
     , seed(game.random())
   {
     name = "gold";
