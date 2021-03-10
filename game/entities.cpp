@@ -39,20 +39,30 @@ bool ent_player_t::turn() {
 
 void ent_player_t::interact_with(librl::entity_t *ent) {
   assert(ent);
-
+  // attaching
   const bool is_enemy = ent->is_type<ent_goblin_t>();
-
   if (is_enemy) {
     attack(static_cast<librl::entity_actor_t*>(ent));
     return;
   }
+  // equipables
+  if (ent->is_subclass<librl::entity_equip_t>()) {
+    if (inventory.add(ent)) {
+      // remove from the game world
+      game.entity_remove(ent);
+    }
+    else {
+      game.message_post("%s's inventory full", name.c_str());
+    }
+  }
+  // items
   if (ent->is_subclass<librl::entity_item_t>()) {
     librl::entity_item_t *item = static_cast<librl::entity_item_t*>(ent);
     if (item->can_pickup) {
-      if (inventory.item_add(ent)) {
+      if (inventory.add(ent)) {
         static_cast<librl::entity_item_t*>(ent)->picked_up(this);
         // remove from the game world
-        game.entity_remove(item);
+        game.entity_remove(ent);
       }
       else {
         game.message_post("%s's inventory full", name.c_str());

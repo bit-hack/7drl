@@ -173,10 +173,15 @@ struct game_7drl_t : public librl::game_t {
     assert(player && player->is_type<ent_player_t>());
     ent_player_t &p = *static_cast<ent_player_t*>(player);
     if (use) {
-      p.inventory.item_use(inv_slot, player);
+      p.inventory.use(inv_slot, player);
+      inv_slot = 0;
     }
     if (drop) {
-      p.inventory.drop(inv_slot);
+      librl::entity_t *item = p.inventory.slots()[inv_slot];
+      if (item) {
+        message_post("%s dropped %s", player->name.c_str(), item->name.c_str());
+        p.inventory.drop(inv_slot);
+      }
     }
   }
 
@@ -261,9 +266,9 @@ struct game_7drl_t : public librl::game_t {
     librl::int2 loc{ 2, 2 };
     for (int i=0; i<inv.slots().size(); ++i) {
       const librl::entity_t *e = inv.slots()[i];
-      c.colour = (i == inv_slot) ? 0xfac4d1 : 0xbaa4b1;
       c.caret_set(librl::int2{ 2, 2 + i });
-      c.puts(e ? e->name.c_str() : "empty");
+      c.colour = (i == inv_slot ) ? 0xfac4d1 : (e ? 0xbaa4b1 : 0x7a6471);
+      c.print("%c %s    ", (i < 2 ? '*' : ' '), e ? e->name.c_str() : "empty");
     }
   }
 

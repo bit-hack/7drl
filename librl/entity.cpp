@@ -45,4 +45,11 @@ void entity_item_t::picked_up(entity_t *by) {
   game.entity_remove(this);
 }
 
+void entity_equip_t::picked_up(entity_t *by) {
+  assert(by);
+  game.message_post("%s picked up a %s", by->name.c_str(), name.c_str());
+  // remove from the game world when put in inventory
+  game.entity_remove(this);
+}
+
 } // namespace librl

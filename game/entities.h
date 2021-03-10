@@ -20,11 +20,11 @@ struct ent_player_t : public librl::entity_actor_t {
 
   ent_player_t(librl::game_t &game);
 
-  int32_t get_accuracy() const override { return 50; }
-  int32_t get_damage() const   override { return 10; }
-  int32_t get_defense() const  override { return 0;  }
-  int32_t get_evasion() const  override { return 10; }
-  int32_t get_crit() const     override { return 2;  }
+  int32_t get_accuracy() const override { return librl::entity_actor_t::get_accuracy() + 50; }
+  int32_t get_damage() const   override { return librl::entity_actor_t::get_damage() + 10; }
+  int32_t get_defense() const  override { return librl::entity_actor_t::get_defense() + 0;  }
+  int32_t get_evasion() const  override { return librl::entity_actor_t::get_evasion() + 10; }
+  int32_t get_crit() const     override { return librl::entity_actor_t::get_crit() + 2;  }
 
   void render() override {
     auto &con = game.console_get();
@@ -39,7 +39,6 @@ struct ent_player_t : public librl::entity_actor_t {
   void _enumerate(librl::gc_enum_t &func) override;
 
   uint32_t gold;
-  librl::inventory_t inventory;
   librl::int2 user_dir;
 };
 
@@ -176,6 +175,88 @@ struct ent_gold_t : public librl::entity_item_t {
       static_cast<ent_player_t*>(e)->gold += value;
       game.entity_remove(this);
     }
+  }
+
+  uint64_t seed;
+};
+
+struct ent_club_t : public librl::entity_equip_t {
+
+  static const uint32_t TYPE = ent_type_club;
+
+  ent_club_t(librl::game_t &game)
+    : librl::entity_equip_t(TYPE, game)
+    , seed(game.random())
+  {
+    name = "club";
+    damage = 5;
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_sword;
+      con.chars.get(pos.x, pos.y) = 'c';
+    }
+  }
+
+  uint64_t seed;
+};
+
+struct ent_mace_t : public librl::entity_equip_t {
+
+  static const uint32_t TYPE = ent_type_mace;
+
+  ent_mace_t(librl::game_t &game)
+    : librl::entity_equip_t(TYPE, game)
+    , seed(game.random())
+  {
+    name = "mace";
+    damage = 8;
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_sword;
+      con.chars.get(pos.x, pos.y) = 'm';
+    }
+  }
+
+  uint64_t seed;
+};
+
+struct ent_sword_t : public librl::entity_equip_t {
+
+  static const uint32_t TYPE = ent_type_sword;
+
+  ent_sword_t(librl::game_t &game)
+    : librl::entity_equip_t(TYPE, game)
+    , seed(game.random())
+  {
+    name = "sword";
+    damage = 10;
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_sword;
+      con.chars.get(pos.x, pos.y) = 's';
+    }
+  }
+
+  void use_on(entity_t *e) {
+    // ?
   }
 
   uint64_t seed;

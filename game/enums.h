@@ -20,6 +20,9 @@ enum {
   ent_type_potion,
   ent_type_stairs,
   ent_type_gold,
+  ent_type_club,
+  ent_type_mace,
+  ent_type_sword,
 };
 
 enum {
@@ -33,6 +36,7 @@ enum {
   colour_stairs = 0xf7f28e,
   colour_potion = 0x463a80,
   colour_gold   = 0xdfdf40,
+  colour_sword  = 0xdfdf40,
 };
 
 }  // namespace game

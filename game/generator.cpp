@@ -98,21 +98,32 @@ void generator_2_t::place_entity(librl::entity_t *e) {
 }
 
 void generator_2_t::place_items() {
+  using namespace librl;
   auto &map = game.map_get();
   for (int32_t i = 0; i < 6; ++i) {
-    librl::entity_t *e = game.gc.alloc<game::ent_goblin_t>(game);
+    entity_t *e = game.gc.alloc<game::ent_goblin_t>(game);
     place_entity(e);
   }
   for (int32_t i = 0; i < 4; ++i) {
-    librl::entity_t *e = game.gc.alloc<game::ent_potion_t>(game);
+    entity_t *e = game.gc.alloc<game::ent_potion_t>(game);
     place_entity(e);
   }
   for (int32_t i = 0; i < 4; ++i) {
-    librl::entity_t *e = game.gc.alloc<game::ent_gold_t>(game);
+    entity_t *e = game.gc.alloc<game::ent_gold_t>(game);
+    place_entity(e);
+  }
+  for (int32_t i = 0; i < 4; ++i) {
+    entity_t *e = nullptr;
+    switch (librl::random(seed, 3)) {
+    case 0: e = game.gc.alloc<game::ent_club_t>(game); break;
+    case 1: e = game.gc.alloc<game::ent_mace_t>(game); break;
+    case 2: e = game.gc.alloc<game::ent_sword_t>(game); break;
+    }
+    assert(e);
     place_entity(e);
   }
   {
-    librl::entity_t *e = game.gc.alloc<game::ent_stairs_t>(game);
+    entity_t *e = game.gc.alloc<game::ent_stairs_t>(game);
     place_entity(e);
   }
 }
