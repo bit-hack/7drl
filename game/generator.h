@@ -21,6 +21,7 @@ struct generator_2_t : public librl::map_generator_t {
   void place_items();
   void place_player();
   void place_grass();
+  void drop_entity();
 
   void place_entity(librl::entity_t *ent);
 

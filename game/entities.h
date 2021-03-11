@@ -85,7 +85,6 @@ struct ent_potion_t : public librl::entity_item_t {
   ent_potion_t(librl::game_t &game)
     : librl::entity_item_t(TYPE, game, /* can_pickup */ true)
     , recovery(20)
-    , seed(game.random())
   {
     name = "potion";
   }
@@ -110,7 +109,6 @@ struct ent_potion_t : public librl::entity_item_t {
   }
 
   const uint32_t recovery;
-  uint64_t seed;
 };
 
 struct ent_stairs_t : public librl::entity_item_t {
@@ -121,7 +119,6 @@ struct ent_stairs_t : public librl::entity_item_t {
 
   ent_stairs_t(librl::game_t &game)
     : librl::entity_item_t(TYPE, game, /* can_pickup */ false)
-    , seed(game.random())
   {
     name = "stairs";
   }
@@ -143,8 +140,6 @@ struct ent_stairs_t : public librl::entity_item_t {
       game.map_next();
     }
   }
-
-  uint64_t seed;
 };
 
 struct ent_gold_t : public librl::entity_item_t {
@@ -186,10 +181,10 @@ struct ent_club_t : public librl::entity_equip_t {
 
   ent_club_t(librl::game_t &game)
     : librl::entity_equip_t(TYPE, game)
-    , seed(game.random())
   {
     name = "club";
-    damage = 5;
+    damage = 4;
+    evasion = -1;
   }
 
   void render() override {
@@ -198,12 +193,10 @@ struct ent_club_t : public librl::entity_equip_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
-      con.attrib.get(pos.x, pos.y) = colour_sword;
-      con.chars.get(pos.x, pos.y) = 'c';
+      con.attrib.get(pos.x, pos.y) = colour_item;
+      con.chars.get(pos.x, pos.y) = '?';
     }
   }
-
-  uint64_t seed;
 };
 
 struct ent_mace_t : public librl::entity_equip_t {
@@ -212,9 +205,32 @@ struct ent_mace_t : public librl::entity_equip_t {
 
   ent_mace_t(librl::game_t &game)
     : librl::entity_equip_t(TYPE, game)
-    , seed(game.random())
   {
     name = "mace";
+    damage = 6;
+    evasion = -1;
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_item;
+      con.chars.get(pos.x, pos.y) = '?';
+    }
+  }
+};
+
+struct ent_sword_t : public librl::entity_equip_t {
+
+  static const uint32_t TYPE = ent_type_sword;
+
+  ent_sword_t(librl::game_t &game)
+    : librl::entity_equip_t(TYPE, game)
+  {
+    name = "sword";
     damage = 8;
   }
 
@@ -224,24 +240,22 @@ struct ent_mace_t : public librl::entity_equip_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
-      con.attrib.get(pos.x, pos.y) = colour_sword;
-      con.chars.get(pos.x, pos.y) = 'm';
+      con.attrib.get(pos.x, pos.y) = colour_item;
+      con.chars.get(pos.x, pos.y) = '?';
     }
   }
-
-  uint64_t seed;
 };
 
-struct ent_sword_t : public librl::entity_equip_t {
+struct ent_dagger_t : public librl::entity_equip_t {
 
-  static const uint32_t TYPE = ent_type_sword;
+  static const uint32_t TYPE = ent_type_dagger;
 
-  ent_sword_t(librl::game_t &game)
+  ent_dagger_t(librl::game_t &game)
     : librl::entity_equip_t(TYPE, game)
-    , seed(game.random())
   {
-    name = "sword";
-    damage = 10;
+    name = "dagger";
+    damage = 6;
+    evasion = 2;;
   }
 
   void render() override {
@@ -250,16 +264,81 @@ struct ent_sword_t : public librl::entity_equip_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
-      con.attrib.get(pos.x, pos.y) = colour_sword;
-      con.chars.get(pos.x, pos.y) = 's';
+      con.attrib.get(pos.x, pos.y) = colour_item;
+      con.chars.get(pos.x, pos.y) = '?';
     }
   }
+};
 
-  void use_on(entity_t *e) {
-    // ?
+struct ent_leather_armour_t : public librl::entity_equip_t {
+
+  static const uint32_t TYPE = ent_type_leather_armour;
+
+  ent_leather_armour_t(librl::game_t &game)
+    : librl::entity_equip_t(TYPE, game)
+  {
+    name = "leather armour";
+    defense = 3;
   }
 
-  uint64_t seed;
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_item;
+      con.chars.get(pos.x, pos.y) = '?';
+    }
+  }
+};
+
+struct ent_metal_armour_t : public librl::entity_equip_t {
+
+  static const uint32_t TYPE = ent_type_leather_armour;
+
+  ent_metal_armour_t(librl::game_t &game)
+    : librl::entity_equip_t(TYPE, game)
+  {
+    name = "leather armour";
+    defense = 6;
+    evasion = -2;
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_item;
+      con.chars.get(pos.x, pos.y) = '?';
+    }
+  }
+};
+
+struct ent_cloak_t : public librl::entity_equip_t {
+
+  static const uint32_t TYPE = ent_type_leather_armour;
+
+  ent_cloak_t(librl::game_t &game)
+    : librl::entity_equip_t(TYPE, game)
+  {
+    name = "cloak";
+    defense = 1;
+    evasion = 4;
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_item;
+      con.chars.get(pos.x, pos.y) = '?';
+    }
+  }
 };
 
 }  // game
