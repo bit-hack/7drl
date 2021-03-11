@@ -248,6 +248,8 @@ struct game_7drl_t : public librl::game_t {
   }
 
   void render_inventory() {
+    using namespace librl;
+
     if (!player) {
       return;
     }
@@ -255,7 +257,7 @@ struct game_7drl_t : public librl::game_t {
     auto &c = *console;
     c.colour = 0xfac4d1;
 
-    c.caret_set(librl::int2{ 0, 0 });
+    c.caret_set(int2{ 0, 0 });
     c.puts("Inventory");
 
     assert(player && player->is_type<ent_player_t>());
@@ -263,12 +265,39 @@ struct game_7drl_t : public librl::game_t {
 
     auto &inv = p->inventory;
 
-    librl::int2 loc{ 2, 2 };
+    int2 loc{ 2, 2 };
     for (int i=0; i<inv.slots().size(); ++i) {
-      const librl::entity_t *e = inv.slots()[i];
+      const entity_t *e = inv.slots()[i];
+
       c.caret_set(librl::int2{ 2, 2 + i });
-      c.colour = (i == inv_slot ) ? 0xfac4d1 : (e ? 0xbaa4b1 : 0x7a6471);
-      c.print("%c %s    ", (i < 2 ? '*' : ' '), e ? e->name.c_str() : "empty");
+      c.colour = (i == inv_slot) ? 0xfac4d1 : (e ? 0xbaa4b1 : 0x7a6471);
+
+      const int y = 2 + i;
+      c.fill(int2{ 0, y }, int2{ c.width, y + 1 }, ' ');
+      c.print(i < 2 ? "* " : "  ");
+
+      if (e == nullptr) {
+        const int y = c.caret_get().y;
+        c.print("empty");
+        continue;
+      }
+
+      if (auto *x = e->as_a<entity_item_t>()) {
+        c.print("%s", x->name.c_str());
+        continue;
+      }
+
+      if (auto *x = e->as_a<entity_equip_t>()) {
+        const int dam = x->damage;
+        const int acc = x->accuracy;
+        const int eva = x->evasion;
+        const int cri = x->crit;
+        const int def = x->defense;
+
+        c.print("%-20s +%02ddam +%02dacc +%02deva +%02dcri +%02ddef",
+          x->name.c_str(), dam, acc, eva, cri, def);
+        continue;
+      }
     }
   }
 
@@ -277,6 +306,10 @@ struct game_7drl_t : public librl::game_t {
     assert(console);
     auto &c = *console;
 
+    if (!player) {
+      return;
+    }
+
     assert(player && player->is_type<ent_player_t>());
     ent_player_t *p = static_cast<ent_player_t*>(player);
 
@@ -284,14 +317,34 @@ struct game_7drl_t : public librl::game_t {
 
     console->colour = 0xfac4d1;
 
-    console->caret_set(int2{ 0, c.height - 1 });
-    console->print("level: %d  ", level);
+    int2 l = int2{ 0, c.height - 1 };
 
-    console->caret_set(int2{ 10, c.height - 1 });
-    console->print("hp: %d  ", p->hp);
+    const int x = 8;
 
-    console->caret_set(int2{ 20, c.height - 1 });
-    console->print("gold: %d  ", p->gold);
+    console->caret_set(l);
+    console->print("lev %d  ", level);
+    l.x += 7;
+    console->caret_set(l);
+    console->print("hp %d  ", p->hp);
+    l.x += x;
+    console->caret_set(l);
+    console->print("gol %d  ", p->gold);
+    l.x += x;
+    console->caret_set(l);
+    console->print("dam %d  ", p->get_damage());
+    l.x += x;
+    console->caret_set(l);
+    console->print("acc %d  ", p->get_accuracy());
+    l.x += x;
+    console->caret_set(l);
+    console->print("eva %d  ", p->get_evasion());
+    l.x += x;
+    console->caret_set(l);
+    console->print("cri %d  ", p->get_crit());
+    l.x += x;
+    console->caret_set(l);
+    console->print("def %d  ", p->get_defense());
+    l.x += x;
   }
 
   void render_map() override {
@@ -360,7 +413,7 @@ int main(int argc, char *args[]) {
     prog.game.tick();
     prog.render();
     // dont burn up the CPU
-    SDL_Delay(0);
+    SDL_Delay(1);
   }
 
   return 0;

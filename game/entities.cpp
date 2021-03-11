@@ -7,8 +7,9 @@ ent_player_t::ent_player_t(librl::game_t &game)
   : librl::entity_actor_t(TYPE, game)
   , user_dir{ 0, 0 }
 {
+  hp_max = 150;
   name = "hero";
-  hp = 100;
+  hp = 150;
   gold = 0;
 }
 
@@ -37,10 +38,76 @@ bool ent_player_t::turn() {
   return false;
 }
 
+void ent_enemy_t::interact_with(librl::entity_t *e) {
+  switch (e->type) {
+  case ent_type_player:
+    attack(static_cast<entity_actor_t*>(e));
+    break;
+  }
+}
+
+bool ent_enemy_t::move_random() {
+  using namespace librl;
+  int2 np = pos;
+  if (librl::random(seed, 3) == 0) {
+    switch (librl::random(seed, 4)) {
+    case 0: ++np.x; break;
+    case 1: --np.x; break;
+    case 2: ++np.y; break;
+    case 3: --np.y; break;
+    }
+  }
+  if (!game.walls_get().get(np)) {
+    pos = np;
+    return true;
+  }
+  if (entity_t *ent = game.entity_find(np)) {
+    return false;
+  }
+  return false;
+}
+
+bool ent_enemy_t::move_pfield(int dir) {
+  using namespace librl;
+  librl::int2 np = pos;
+  int32_t dx = 0;
+  int32_t dy = 0;
+  game.pfield_get().diff(pos.x, pos.y, dx, dy);
+  if (dx != 0 || dy != 0) {
+    if (librl::abs(dx) > librl::abs(dy)) {
+      np.x += dx * dir;
+    }
+    else {
+      np.y += dy * dir;
+    }
+  }
+  if (entity_t *ent = game.entity_find(np)) {
+    interact_with(ent);
+    return true;
+  }
+  if (!game.walls_get().get(np)) {
+    pos = np;
+    return true;
+  }
+  return false;
+}
+
+bool ent_enemy_t::turn() {
+  if (move_pfield()) {
+    return true;
+  }
+  if (move_random()) {
+    return true;
+  }
+  // skip turn
+  return true;
+}
+
 void ent_player_t::interact_with(librl::entity_t *ent) {
   assert(ent);
-  // attaching
-  const bool is_enemy = ent->is_type<ent_goblin_t>();
+  // attacking
+  const bool is_enemy =
+    ent->is_subclass<entity_actor_t>() && !ent->is_type<ent_player_t>();
   if (is_enemy) {
     attack(static_cast<librl::entity_actor_t*>(ent));
     return;
@@ -48,6 +115,7 @@ void ent_player_t::interact_with(librl::entity_t *ent) {
   // equipables
   if (ent->is_subclass<librl::entity_equip_t>()) {
     if (inventory.add(ent)) {
+      game.message_post("%s picked up %s", name.c_str(), ent->name.c_str());
       // remove from the game world
       game.entity_remove(ent);
     }
@@ -60,7 +128,7 @@ void ent_player_t::interact_with(librl::entity_t *ent) {
     librl::entity_item_t *item = static_cast<librl::entity_item_t*>(ent);
     if (item->can_pickup) {
       if (inventory.add(ent)) {
-        static_cast<librl::entity_item_t*>(ent)->picked_up(this);
+        game.message_post("%s picked up %s", name.c_str(), ent->name.c_str());
         // remove from the game world
         game.entity_remove(ent);
       }
@@ -75,50 +143,45 @@ void ent_player_t::interact_with(librl::entity_t *ent) {
   }
 }
 
-bool ent_goblin_t::turn() {
-  librl::int2 np = pos;
+void ent_warlock_t::spawn_skeleton() {
+  using namespace librl;
+  for (int32_t i = 0; i < 4; ++i) {
+    int2 p = { pos.x + int32_t(random(seed, 5)) - 2,
+               pos.y + int32_t(random(seed, 5)) - 2 };
 
-  int32_t dx = 0;
-  int32_t dy = 0;
-  game.pfield_get().diff(pos.x, pos.y, dx, dy);
-  if (dx != 0 || dy != 0) {
-    if (librl::abs(dx) > librl::abs(dy)) {
-      np.x += dx;
+    if (p.x <= 0 ||
+        p.y <= 0 ||
+        p.x >= int32_t(game.map_get().width  - 1) ||
+        p.y >= int32_t(game.map_get().height - 1)) {
+      continue;
     }
-    else {
-      np.y += dy;
-    }
-  }
-  else {
-    if (librl::random(seed, 3) == 0) {
-      switch (librl::random(seed) & 3) {
-      case 0: ++np.x; break;
-      case 1: --np.x; break;
-      case 2: ++np.y; break;
-      case 3: --np.y; break;
-      }
+
+    if (!game.walls_get().get(p)) {
+      game.message_post("%s spawned a skeleton", name.c_str());
+      game.entity_add(game.gc.alloc<game::ent_skeleton_t>(game));
+      break;
     }
   }
-
-  if (entity_t *ent = game.entity_find(np)) {
-    interact_with(ent);
-    return true;
-  }
-
-  if (!game.walls_get().get(np)) {
-    pos = np;
-    return true;
-  }
-
-  // skip turn
-  return true;
 }
 
-void ent_goblin_t::interact_with(entity_t *e) {
-  switch (e->type) {
-  case ent_type_player:
-    attack(static_cast<entity_actor_t*>(e));
-    break;
+void ent_wrath_t::teleport_to_pos(const librl::int2 &j) {
+  using namespace librl;
+  for (int32_t i = 0; i < 4; ++i) {
+    int2 p = { j.x + int32_t(random(seed, 5)) - 2,
+               j.y + int32_t(random(seed, 5)) - 2 };
+
+    if (p.x <= 0 ||
+        p.y <= 0 ||
+        p.x >= int32_t(game.map_get().width - 1) ||
+        p.y >= int32_t(game.map_get().height - 1)) {
+      continue;
+    }
+
+    if (!game.walls_get().get(p)) {
+      game.message_post("%s teleported", name.c_str());
+      pos = p;
+      break;
+    }
   }
 }
 

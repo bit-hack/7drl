@@ -42,23 +42,20 @@ struct ent_player_t : public librl::entity_actor_t {
   librl::int2 user_dir;
 };
 
-struct ent_goblin_t : public librl::entity_actor_t {
+struct ent_enemy_t : public librl::entity_actor_t {
 
-  static const uint32_t TYPE = ent_type_goblin;
-
-  ent_goblin_t(librl::game_t &game)
-    : librl::entity_actor_t(TYPE, game)
+  ent_enemy_t(uint32_t type, librl::game_t &game)
+    : librl::entity_actor_t(type, game)
     , seed(game.random())
   {
-    name = "goblin";
-    hp = 30;
+    accuracy = 0;
+    damage = 0;
+    defense = 0;
+    evasion = 0;
+    crit = 0;
+    colour = 0xFF00FF;
+    glyph = '£';
   }
-
-  int32_t get_accuracy() const override { return 40; }
-  int32_t get_damage() const   override { return 10; }
-  int32_t get_defense() const  override { return 0;  }
-  int32_t get_evasion() const  override { return 0;  }
-  int32_t get_crit() const     override { return 0;  }
 
   void render() override {
     auto &con = game.console_get();
@@ -66,8 +63,8 @@ struct ent_goblin_t : public librl::entity_actor_t {
       return;
     }
     if (librl::raycast(game.player->pos, pos, game.walls_get())) {
-      con.attrib.get(pos.x, pos.y) = colour_goblin;
-      con.chars.get(pos.x, pos.y) = 'g';
+      con.attrib.get(pos.x, pos.y) = colour;
+      con.chars.get(pos.x, pos.y) = glyph;
     }
   }
 
@@ -75,7 +72,277 @@ struct ent_goblin_t : public librl::entity_actor_t {
 
   bool turn() override;
 
+  bool move_random();
+  bool move_pfield(int dir = 1);
+
+  int32_t get_accuracy() const override { return accuracy; }
+  int32_t get_damage() const   override { return damage; }
+  int32_t get_defense() const  override { return defense; }
+  int32_t get_evasion() const  override { return evasion; }
+  int32_t get_crit() const     override { return crit; }
+
+  int32_t accuracy;
+  int32_t damage;
+  int32_t defense;
+  int32_t evasion;
+  int32_t crit;
+
+  uint32_t colour;
+  char glyph;
+
   uint64_t seed;
+};
+
+struct ent_goblin_t : public ent_enemy_t {
+
+  static const uint32_t TYPE = ent_type_goblin;
+
+  ent_goblin_t(librl::game_t &game)
+    : ent_enemy_t(TYPE, game)
+  {
+    name = "goblin";
+    hp = 30;
+    accuracy = 40;
+    damage = 8;
+    glyph = 'g';
+    colour = colour_goblin;
+  }
+};
+
+struct ent_vampire_t : public ent_enemy_t {
+
+  static const uint32_t TYPE = ent_type_vampire;
+
+  ent_vampire_t(librl::game_t &game)
+    : ent_enemy_t(TYPE, game)
+  {
+    name = "vampire";
+    hp = 50;
+    accuracy = 75;
+    damage = 15;
+    glyph = 'v';
+    colour = colour_vampire;
+  }
+
+  bool turn() override {
+    if (hp < 10) {
+      // ... random chance to teleport away?
+    }
+    ++hp;
+    return ent_enemy_t::turn();
+  }
+
+  void on_give_damage(int32_t damage) override {
+    damage /= 2;
+    game.message_post("%s leeched %d hp", name.c_str(), damage);
+    hp += damage;
+  }
+};
+
+struct ent_ogre_t : public ent_enemy_t {
+
+  static const uint32_t TYPE = ent_type_ogre;
+
+  ent_ogre_t(librl::game_t &game)
+    : ent_enemy_t(TYPE, game)
+  {
+    name = "ogre";
+    hp = 170;
+    accuracy = 75;
+    damage = 16;
+    glyph = 'o';
+    colour = colour_ogre;
+  }
+
+  bool turn() override {
+
+    // smash if too close
+
+    return ent_enemy_t::turn();
+  }
+};
+
+struct ent_wrath_t : public ent_enemy_t {
+
+  static const uint32_t TYPE = ent_type_wrath;
+
+  ent_wrath_t(librl::game_t &game)
+    : ent_enemy_t(TYPE, game)
+    , timer(2)
+  {
+    name = "wrath";
+    hp = 45;
+    accuracy = 90;
+    damage = 10;
+    glyph = 'w';
+    colour = colour_wrath;
+  }
+
+  void teleport_to_pos(const librl::int2 &p);
+
+  bool turn() override {
+    using namespace librl;
+    if (game.player) {
+      const auto &pp = game.player->pos;
+      if (raycast(pp, pos, game.walls_get())) {
+        --timer;
+      }
+      if (timer <= 0) {
+        timer = 2;
+        const int32_t dx = int32_t(pp.x) - int32_t(pos.x);
+        const int32_t dy = int32_t(pp.y) - int32_t(pos.y);
+        const int32_t dist = dx * dx + dy * dy;
+        if (dist > 5) {
+          teleport_to_pos(pp);
+          return true;
+        }
+      }
+    }
+    return ent_enemy_t::turn();
+  }
+
+  int timer;
+};
+
+struct ent_dwarf_t : public ent_enemy_t {
+
+  static const uint32_t TYPE = ent_type_dwarf;
+
+  ent_dwarf_t(librl::game_t &game)
+    : ent_enemy_t(TYPE, game)
+  {
+    name = "dwarf";
+    hp = 80;
+    accuracy = 60;
+    damage = 15;
+    glyph = 'd';
+    colour = colour_dwarf;
+  }
+
+  bool turn() override {
+    using namespace librl;
+    if (game.player) {
+      // head straight for the player if close enough
+      const auto &pp = game.player->pos;
+      const int32_t dx = int32_t(pp.x) - int32_t(pos.x);
+      const int32_t dy = int32_t(pp.y) - int32_t(pos.y);
+      const int32_t dist = dx * dx + dy * dy;
+      if (dist >= 1 && dist <= 8) {
+        const int2 d = {
+          abs(dx) > abs(dy) ? sign(dx) : 0,
+          abs(dx) > abs(dy) ? 0 : sign(dy)
+        };
+        const int2 np{ pos.x + d.x, pos.y + d.y };
+        // smash the wall down
+        if (game.walls_get().get(np)) {
+          game.walls_get().clear(np);
+          game.map_get().get(np) = '.';
+        }
+        if (entity_t *e = game.entity_find(np)) {
+          interact_with(e);
+          return true;
+        }
+        else {
+          pos = np;
+          return true;
+        }
+      }
+    }
+    return ent_enemy_t::turn();
+  }
+};
+
+struct ent_warlock_t : public ent_enemy_t {
+
+  static const uint32_t TYPE = ent_type_warlock;
+
+  static const uint32_t spawn_time = 5;
+
+  ent_warlock_t(librl::game_t &game)
+    : ent_enemy_t(TYPE, game)
+    , timer(spawn_time)
+  {
+    name = "warlock";
+    hp = 25;
+    accuracy = 50;
+    damage = 5;
+    glyph = 'W';
+    colour = colour_warlock;
+  }
+
+  void spawn_skeleton();
+
+  bool turn() {
+    using namespace librl;
+    if (!game.player) {
+      return true;
+    }
+    const int2 &x = game.player->pos;
+    if (raycast(x, pos, game.walls_get())) {
+      if (timer-- == 0) {
+        timer = spawn_time;
+        spawn_skeleton();
+      }
+    }
+    if (move_pfield(-1)) {
+      return true;
+    }
+    if (move_random()) {
+      return true;
+    }
+    // skip turn
+    return true;
+  }
+
+  uint32_t timer;
+};
+
+struct ent_skeleton_t : public ent_enemy_t {
+
+  static const uint32_t TYPE = ent_type_mimic;
+
+  ent_skeleton_t(librl::game_t &game)
+    : ent_enemy_t(TYPE, game)
+  {
+    name = "skeleton";
+    hp = 40;
+    accuracy = 75;
+    damage = 20;
+    glyph = 's';
+    colour = colour_skeleton;
+  }
+};
+
+struct ent_mimic_t : public ent_enemy_t {
+
+  static const uint32_t TYPE = ent_type_mimic;
+
+  static const uint32_t start_hp = 70;
+
+  ent_mimic_t(librl::game_t &game)
+    : ent_enemy_t(TYPE, game)
+    , trigger(false)
+  {
+    name = "mimic";
+    hp = start_hp;
+    accuracy = 75;
+    damage = 20;
+    glyph = '?';
+    colour = colour_item;
+  }
+
+  bool turn() override {
+    if (trigger) {
+      return ent_enemy_t::turn();
+    }
+    return true;
+  }
+
+  void on_take_damage(int32_t damage) override {
+    trigger = true;
+  }
+
+  bool trigger;
 };
 
 struct ent_potion_t : public librl::entity_item_t {
@@ -101,11 +368,16 @@ struct ent_potion_t : public librl::entity_item_t {
   }
 
   void use_on(entity_t *e) {
-    if (e->is_type<ent_player_t>()) {
-      game.message_post("%s used %s to recover %u hp", e->name.c_str(),
-          name.c_str(), recovery);
-      static_cast<ent_player_t*>(e)->hp += recovery;
-    }
+    using namespace librl;
+
+    entity_actor_t *act = e->as_a<entity_actor_t>();
+    assert(act);
+
+    const int32_t before = act->hp;
+    act->hp = min<int32_t>(act->hp_max, act->hp + recovery);
+    const int32_t diff = act->hp - before;
+    game.message_post("%s used %s to recover %u hp", e->name.c_str(),
+        name.c_str(), diff);
   }
 
   const uint32_t recovery;

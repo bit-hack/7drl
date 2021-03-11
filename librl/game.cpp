@@ -78,7 +78,7 @@ void game_t::map_create(uint32_t w, uint32_t h) {
   map.reset(new buffer2d_u8_t(w, h));
   // run the map generator
   if (generator) {
-    generator->generate();
+    generator->generate(level);
   }
   // create a potential field
   assert(walls);

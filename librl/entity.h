@@ -34,6 +34,18 @@ struct entity_t : librl::gc_base_t {
   virtual bool turn() = 0;
 
   template <typename type_t>
+  type_t* as_a() {
+    return (subclass == type_t::SUBCLASS || type == type_t::TYPE)
+      ? static_cast<type_t*>(this) : nullptr;
+  }
+
+  template <typename type_t>
+  const type_t* as_a() const {
+    return (subclass == type_t::SUBCLASS || type == type_t::TYPE)
+      ? static_cast<const type_t*>(this) : nullptr;
+  }
+
+  template <typename type_t>
   bool is_type() const {
     return type_t::TYPE == type;
   }
@@ -56,9 +68,12 @@ protected:
 struct entity_actor_t : public entity_t {
 
   static const subclass_t SUBCLASS = ent_subclass_actor;
+  static const uint32_t TYPE = -1;
 
   entity_actor_t(const uint32_t type, game_t &game)
     : entity_t(type, SUBCLASS, game)
+    , hp(0)
+    , hp_max(0)
   {
   }
 
@@ -72,13 +87,18 @@ struct entity_actor_t : public entity_t {
 
   virtual void kill();
 
+  virtual void on_take_damage(int32_t damage) {};
+  virtual void on_give_damage(int32_t damage) {};
+
   int32_t hp;
+  int32_t hp_max;
   inventory_t inventory;
 };
 
 struct entity_item_t : public entity_t {
 
   static const subclass_t SUBCLASS = ent_subclass_item;
+  static const uint32_t TYPE = -1;
 
   entity_item_t(const uint32_t type, game_t &game, bool can_pickup)
     : entity_t(type, SUBCLASS, game)
@@ -100,6 +120,7 @@ struct entity_item_t : public entity_t {
 struct entity_equip_t : public entity_t {
 
   static const subclass_t SUBCLASS = ent_subclass_equip;
+  static const uint32_t TYPE = -1;
 
   entity_equip_t(const uint32_t type, game_t &game)
     : entity_t(type, SUBCLASS, game)

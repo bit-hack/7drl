@@ -11,6 +11,9 @@ inline uint64_t random(uint64_t &seed) {
 }
 
 inline uint64_t random(uint64_t &seed, uint64_t max) {
+  if (max == 0) {
+    return 0;
+  }
   return random(seed) % max;
 }
 

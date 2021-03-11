@@ -10,7 +10,7 @@
 
 namespace game {
 
-void generator_2_t::generate() {
+void generator_2_t::generate(int32_t gen_level) {
 
   assert(game.player);
   game.entity_clear_all();
@@ -20,6 +20,8 @@ void generator_2_t::generate() {
   auto &map = game.map_get();
   const int32_t map_w = map.width;
   const int32_t map_h = map.height;
+
+  level = gen_level;
 
   seed = game.random();
 
@@ -97,6 +99,25 @@ void generator_2_t::place_entity(librl::entity_t *e) {
   game.entity_add(e);
 }
 
+void generator_2_t::drop_enemy() {
+  using namespace librl;
+  librl::entity_t *e = nullptr;
+
+  int32_t l = clamp<int32_t>(0, int32_t(librl::random(seed, level / 2)), 6);
+
+  switch (false ? 1 : l) {
+  case 0: e = game.gc.alloc<game::ent_goblin_t>(game); break;
+  case 1: e = game.gc.alloc<game::ent_vampire_t>(game); break;
+  case 2: e = game.gc.alloc<game::ent_ogre_t>(game); break;
+  case 3: e = game.gc.alloc<game::ent_wrath_t>(game); break;
+  case 4: e = game.gc.alloc<game::ent_dwarf_t>(game); break;
+  case 5: e = game.gc.alloc<game::ent_warlock_t>(game); break;
+  case 6: e = game.gc.alloc<game::ent_mimic_t>(game); break;
+  }
+  assert(e);
+  place_entity(e);
+}
+
 void generator_2_t::drop_entity() {
   using namespace librl;
   librl::entity_t *e = nullptr;
@@ -117,10 +138,9 @@ void generator_2_t::place_items() {
   using namespace librl;
   auto &map = game.map_get();
   for (int32_t i = 0; i < 6; ++i) {
-    entity_t *e = game.gc.alloc<game::ent_goblin_t>(game);
-    place_entity(e);
+    drop_enemy();
   }
-  for (int32_t i = 0; i < 4; ++i) {
+  for (int32_t i = 0; i < 3; ++i) {
     entity_t *e = game.gc.alloc<game::ent_potion_t>(game);
     place_entity(e);
   }
@@ -128,7 +148,7 @@ void generator_2_t::place_items() {
     entity_t *e = game.gc.alloc<game::ent_gold_t>(game);
     place_entity(e);
   }
-  for (int32_t i = 0; i < 6; ++i) {
+  for (int32_t i = 0; i < 2; ++i) {
     drop_entity();
   }
   {

@@ -12,16 +12,19 @@ struct generator_2_t : public librl::map_generator_t {
   static const uint32_t num_colours = 3;
 
   generator_2_t(librl::game_t &game)
-    : librl::map_generator_t(game) {
+    : librl::map_generator_t(game)
+    , level(0)
+  {
   }
 
-  void generate() override;
+  void generate(int32_t level) override;
   void place_rect();
   void place_walls();
   void place_items();
   void place_player();
   void place_grass();
   void drop_entity();
+  void drop_enemy();
 
   void place_entity(librl::entity_t *ent);
 
@@ -36,6 +39,7 @@ struct generator_2_t : public librl::map_generator_t {
 
   void mask_border();
 
+  int32_t level;
   uint64_t seed;
 };
 

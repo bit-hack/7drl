@@ -28,6 +28,15 @@ static inline type_t sign(const type_t x) {
   return (x < 0) ? -1 : (x > 0 ? 1 : 0);
 }
 
+#if 0
+template <typename type_t>
+static inline int dist_sqr(const vec2_t<type_t> &a, const vec2_t<type_t> &b) {
+  const type_t dx = b.x - a.x;
+  const type_t dy = b.y - a.y;
+  return dx * dx + dy * dy;
+}
+#endif
+
 template <typename type_t>
 struct vec2_t {
   type_t x, y;
@@ -38,6 +47,11 @@ typedef vec2_t<int32_t> int2;
 template <typename type_t>
 inline bool operator == (const vec2_t<type_t> &a, const vec2_t<type_t> &b) {
   return a.x == b.x && a.y == b.y;
+}
+
+template <typename type_t>
+inline bool operator != (const vec2_t<type_t> &a, const vec2_t<type_t> &b) {
+  return a.x != b.x || a.y != b.y;
 }
 
 }  // namespace librl

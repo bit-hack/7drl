@@ -20,7 +20,7 @@ struct map_generator_t {
   {
   }
 
-  virtual void generate() = 0;
+  virtual void generate(int32_t level) = 0;
 
   game_t &game;
 };
@@ -47,7 +47,7 @@ struct game_t {
 
   game_t()
     : player(nullptr)
-    , level(1)
+    , level(3)
     , seed(12345)
     , generate_new_map(false)
   {
