@@ -60,6 +60,7 @@ struct ent_enemy_t : public librl::entity_actor_t {
     crit = 0;
     colour = 0xFF00FF;
     glyph = '£';
+    sense = 250;
   }
 
   void render() override {
@@ -91,6 +92,8 @@ struct ent_enemy_t : public librl::entity_actor_t {
   int32_t defense;
   int32_t evasion;
   int32_t crit;
+
+  uint8_t sense;
 
   uint32_t colour;
   char glyph;
@@ -127,6 +130,7 @@ struct ent_vampire_t : public ent_enemy_t {
     damage = 15;
     glyph = 'v';
     colour = colour_vampire;
+    sense = 245;
   }
 
   bool turn() override {
@@ -160,6 +164,7 @@ struct ent_ogre_t : public ent_enemy_t {
     damage = 16;
     glyph = 'o';
     colour = colour_ogre;
+    sense = 245;
   }
 
   bool turn() override {
@@ -184,6 +189,7 @@ struct ent_wrath_t : public ent_enemy_t {
     damage = 15;
     glyph = 'w';
     colour = colour_wrath;
+    sense = 245;
   }
 
   void teleport_to_pos(const librl::int2 &p);
@@ -225,6 +231,7 @@ struct ent_dwarf_t : public ent_enemy_t {
     damage = 20;
     glyph = 'd';
     colour = colour_dwarf;
+    sense = 248;
   }
 
   bool turn() override {
@@ -276,6 +283,7 @@ struct ent_warlock_t : public ent_enemy_t {
     damage = 5;
     glyph = 'W';
     colour = colour_warlock;
+    sense = 250;
   }
 
   void spawn_skeleton();
@@ -320,6 +328,7 @@ struct ent_skeleton_t : public ent_enemy_t {
     accuracy = 75;
     damage = 20;
     glyph = 's';
+    sense = 240;
     colour = colour_skeleton;
   }
 };

@@ -33,7 +33,7 @@ struct pfield_t {
 
   void update();
 
-  void diff(uint32_t x, uint32_t y, int32_t &dx, int32_t &dy);
+  void diff(uint32_t x, uint32_t y, int32_t &dx, int32_t &dy, uint8_t thresh);
 
   void drop(uint32_t x, uint32_t y, uint8_t);
 

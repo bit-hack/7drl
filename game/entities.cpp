@@ -77,7 +77,7 @@ bool ent_enemy_t::move_pfield(int dir) {
   librl::int2 np = pos;
   int32_t dx = 0;
   int32_t dy = 0;
-  game.pfield_get().diff(pos.x, pos.y, dx, dy);
+  game.pfield_get().diff(pos.x, pos.y, dx, dy, sense);
   if (dx != 0 || dy != 0) {
     if (librl::abs(dx) > librl::abs(dy)) {
       np.x += dx * dir;

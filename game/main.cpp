@@ -235,7 +235,7 @@ struct game_7drl_t : public librl::game_t {
         pfield->update();
         // drop the player smell
         const bool on_grass = (map_get().get(player->pos) == tile_grass);
-        pfield->drop(player->pos.x, player->pos.y, on_grass ? 5 : 7);
+        pfield->drop(player->pos.x, player->pos.y, on_grass ? 253 : 255);
       }
       // update the view
       render();

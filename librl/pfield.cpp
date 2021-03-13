@@ -30,7 +30,7 @@ void pfield_t::update() {
   state ^= 1;
 }
 
-void pfield_t::diff(uint32_t x, uint32_t y, int32_t &dx, int32_t &dy) {
+void pfield_t::diff(uint32_t x, uint32_t y, int32_t &dx, int32_t &dy, uint8_t thresh) {
   const auto &r = read();
 
   assert(x > 0 && x < r.width  - 1);
@@ -39,10 +39,16 @@ void pfield_t::diff(uint32_t x, uint32_t y, int32_t &dx, int32_t &dy) {
   const uint8_t x0 = sample(x - 1, y);
   const uint8_t x1 = sample(x + 1, y);
   dx = librl::sign(int32_t(x1) - int32_t(x0));
+  if (x0 < thresh && x1 < thresh) {
+    dx = 0;
+  }
 
   const uint8_t y0 = sample(x, y - 1);
   const uint8_t y1 = sample(x, y + 1);
   dy = librl::sign(int32_t(y1) - int32_t(y0));
+  if (y0 < thresh && y1 < thresh) {
+    dy = 0;
+  }
 }
 
 void pfield_t::drop(uint32_t x, uint32_t y, uint8_t val) {
