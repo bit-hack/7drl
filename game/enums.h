@@ -5,6 +5,8 @@ namespace game {
 enum screen_t {
   screen_game,
   screen_inventory,
+  screen_title,
+  screen_death,
 };
 
 enum {
@@ -40,6 +42,7 @@ enum {
   ent_type_leather_armour,
   ent_type_metal_armour,
   ent_type_cloak_armour,
+  ent_type_shield,
 };
 
 enum {
@@ -51,7 +54,7 @@ enum {
   colour_player   = 0xf7f28e,
 
   colour_goblin   = 0x46803a,
-  colour_vampire  = 0x80463a,
+  colour_vampire  = 0xa0664a,
   colour_ogre     = 0x80763a,
   colour_wrath    = 0x80763a,
   colour_dwarf    = 0x80763a,

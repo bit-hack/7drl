@@ -19,8 +19,7 @@ enum subclass_t {
 struct entity_t : librl::gc_base_t {
 
   entity_t(const uint32_t type, const uint32_t subclass, game_t &game)
-    : order(0)
-    , pos(int2{-1, -1})
+    : pos(int2{-1, -1})
     , type(type)
     , subclass(subclass)
     , game(game)
@@ -55,7 +54,6 @@ struct entity_t : librl::gc_base_t {
     return type_t::SUBCLASS == subclass;
   }
 
-  uint64_t order;
   int2 pos;
   const uint32_t type;
   const uint32_t subclass;
@@ -87,8 +85,8 @@ struct entity_actor_t : public entity_t {
 
   virtual void kill();
 
-  virtual void on_take_damage(int32_t damage) {};
-  virtual void on_give_damage(int32_t damage) {};
+  virtual void on_take_damage(int32_t damage, entity_t *from) {};
+  virtual void on_give_damage(int32_t damage, entity_t *to) {};
 
   int32_t hp;
   int32_t hp_max;

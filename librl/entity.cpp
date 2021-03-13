@@ -13,8 +13,8 @@ void entity_actor_t::attack(entity_actor_t *target) {
     const uint32_t damage = get_damage();
     target->hp -= damage;
     const bool dead = target->hp <= 0;
-    on_give_damage(damage);          // callback
-    target->on_take_damage(damage);  // callback
+    on_give_damage(damage, target);        // callback
+    target->on_take_damage(damage, this);  // callback
     game.message_post("%s was critically hit by %s for %u damage%s",
       target->name.c_str(), name.c_str(), damage, dead ? " and killed" : "");
   }
@@ -27,8 +27,8 @@ void entity_actor_t::attack(entity_actor_t *target) {
     }
     const int32_t damage = librl::clamp<int32_t>(0, get_damage() - target->get_defense(), 1000);
     target->hp -= damage;
-    on_give_damage(damage);          // callback
-    target->on_take_damage(damage);  // callback
+    on_give_damage(damage, target);        // callback
+    target->on_take_damage(damage, this);  // callback
     const bool dead = target->hp <= 0;
     game.message_post("%s was hit by %s for %u damage%s",
       target->name.c_str(), name.c_str(), damage, dead ? " and killed" : "");

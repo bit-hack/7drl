@@ -32,13 +32,18 @@ struct ent_player_t : public librl::entity_actor_t {
     con.chars.get(pos.x, pos.y) = '@';
   }
 
+  void kill() override;
+
   void interact_with(entity_t *e);
 
   bool turn() override;
 
   void _enumerate(librl::gc_enum_t &func) override;
 
+  void on_give_damage(int32_t damage, entity_t *to) override;
+
   uint32_t gold;
+  uint32_t xp;
   librl::int2 user_dir;
 };
 
@@ -125,14 +130,17 @@ struct ent_vampire_t : public ent_enemy_t {
   }
 
   bool turn() override {
-    if (hp < 10) {
-      // ... random chance to teleport away?
+    hp += hp >= 50 ? 0 : 2;
+    if (move_pfield(hp <= 15 ? -1 : 1)) {
+      return true;
     }
-    ++hp;
-    return ent_enemy_t::turn();
+    if (move_random()) {
+      return true;
+    }
+    return true;
   }
 
-  void on_give_damage(int32_t damage) override {
+  void on_give_damage(int32_t damage, entity_t *) override {
     damage /= 2;
     game.message_post("%s leeched %d hp", name.c_str(), damage);
     hp += damage;
@@ -171,9 +179,9 @@ struct ent_wrath_t : public ent_enemy_t {
     , timer(2)
   {
     name = "wrath";
-    hp = 45;
+    hp = 75;
     accuracy = 90;
-    damage = 10;
+    damage = 15;
     glyph = 'w';
     colour = colour_wrath;
   }
@@ -213,8 +221,8 @@ struct ent_dwarf_t : public ent_enemy_t {
   {
     name = "dwarf";
     hp = 80;
-    accuracy = 60;
-    damage = 15;
+    accuracy = 75;
+    damage = 20;
     glyph = 'd';
     colour = colour_dwarf;
   }
@@ -256,11 +264,11 @@ struct ent_warlock_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_warlock;
 
-  static const uint32_t spawn_time = 5;
+  static const uint32_t spawn_time = 10;
 
   ent_warlock_t(librl::game_t &game)
     : ent_enemy_t(TYPE, game)
-    , timer(spawn_time)
+    , timer(spawn_time / 2)
   {
     name = "warlock";
     hp = 25;
@@ -284,6 +292,9 @@ struct ent_warlock_t : public ent_enemy_t {
         spawn_skeleton();
       }
     }
+    else {
+      timer = spawn_time;
+    }
     if (move_pfield(-1)) {
       return true;
     }
@@ -305,7 +316,7 @@ struct ent_skeleton_t : public ent_enemy_t {
     : ent_enemy_t(TYPE, game)
   {
     name = "skeleton";
-    hp = 40;
+    hp = 80;
     accuracy = 75;
     damage = 20;
     glyph = 's';
@@ -317,16 +328,14 @@ struct ent_mimic_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_mimic;
 
-  static const uint32_t start_hp = 70;
-
   ent_mimic_t(librl::game_t &game)
     : ent_enemy_t(TYPE, game)
     , trigger(false)
   {
     name = "mimic";
-    hp = start_hp;
+    hp = 200;
     accuracy = 75;
-    damage = 20;
+    damage = 15;
     glyph = '?';
     colour = colour_item;
   }
@@ -338,7 +347,7 @@ struct ent_mimic_t : public ent_enemy_t {
     return true;
   }
 
-  void on_take_damage(int32_t damage) override {
+  void on_take_damage(int32_t damage, entity_t *) override {
     trigger = true;
   }
 
@@ -550,7 +559,31 @@ struct ent_leather_armour_t : public librl::entity_equip_t {
     : librl::entity_equip_t(TYPE, game)
   {
     name = "leather armour";
+    defense = 4;
+  }
+
+  void render() override {
+    auto &con = game.console_get();
+    if (!game.player) {
+      return;
+    }
+    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+      con.attrib.get(pos.x, pos.y) = colour_item;
+      con.chars.get(pos.x, pos.y) = '?';
+    }
+  }
+};
+
+struct ent_shield_t : public librl::entity_equip_t {
+
+  static const uint32_t TYPE = ent_type_shield;
+
+  ent_shield_t(librl::game_t &game)
+    : librl::entity_equip_t(TYPE, game)
+  {
+    name = "shield";
     defense = 3;
+    evasion = 2;
   }
 
   void render() override {
@@ -574,7 +607,7 @@ struct ent_metal_armour_t : public librl::entity_equip_t {
   {
     name = "leather armour";
     defense = 6;
-    evasion = -2;
+    evasion = -1;
   }
 
   void render() override {
@@ -597,8 +630,8 @@ struct ent_cloak_t : public librl::entity_equip_t {
     : librl::entity_equip_t(TYPE, game)
   {
     name = "cloak";
-    defense = 1;
-    evasion = 4;
+    defense = 3;
+    evasion = 2;
   }
 
   void render() override {

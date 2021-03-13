@@ -39,6 +39,8 @@ struct generator_2_t : public librl::map_generator_t {
 
   void mask_border();
 
+  void fill_invalid(const librl::int2 &p);
+
   int32_t level;
   uint64_t seed;
 };

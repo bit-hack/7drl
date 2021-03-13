@@ -42,6 +42,8 @@ struct console_t {
 
   void window_clear();
 
+  void window_scroll();
+
   void caret_set(const int2 &pos);
 
   const int2 &caret_get() const {
@@ -56,8 +58,6 @@ struct console_t {
   uint32_t colour;
 
 protected:
-  // scroll the window up one row
-  void window_scroll();
 
   int2 caret;
   int2 window_min;

@@ -9,12 +9,17 @@ ent_player_t::ent_player_t(librl::game_t &game)
 {
   hp_max = 150;
   name = "hero";
-  hp = 150;
+  hp = 100;
   gold = 0;
+  xp = 0;
 }
 
 void ent_player_t::_enumerate(librl::gc_enum_t &func) {
   inventory._enumerate(func);
+}
+
+void ent_player_t::kill() {
+  hp = 0;
 }
 
 bool ent_player_t::turn() {
@@ -158,7 +163,8 @@ void ent_warlock_t::spawn_skeleton() {
 
     if (!game.walls_get().get(p)) {
       game.message_post("%s spawned a skeleton", name.c_str());
-      game.entity_add(game.gc.alloc<game::ent_skeleton_t>(game));
+      entity_t *e = game.entity_add(game.gc.alloc<game::ent_skeleton_t>(game));
+      e->pos = p;
       break;
     }
   }
@@ -181,6 +187,43 @@ void ent_wrath_t::teleport_to_pos(const librl::int2 &j) {
       game.message_post("%s teleported", name.c_str());
       pos = p;
       break;
+    }
+  }
+}
+
+void ent_player_t::on_give_damage(int32_t damage, entity_t *to) {
+  if (entity_actor_t *act = to->as_a<entity_actor_t>()) {
+    if (act->hp > 0) {
+      return;
+    }
+    int gain = 0;
+    if (to->is_type<ent_goblin_t>()) {
+      gain = 10;
+    }
+    if (to->is_type<ent_ogre_t>()) {
+      gain = 20;
+    }
+    if (to->is_type<ent_dwarf_t>()) {
+      gain = 30;
+    }
+    if (to->is_type<ent_mimic_t>()) {
+      gain = 75;
+    }
+    if (to->is_type<ent_skeleton_t>()) {
+      gain = 77;
+    }
+    if (to->is_type<ent_vampire_t>()) {
+      gain = 75;
+    }
+    if (to->is_type<ent_wrath_t>()) {
+      gain = 80;
+    }
+    if (to->is_type<ent_warlock_t>()) {
+      gain = 150;
+    }
+    if (gain) {
+      xp += gain;
+      game.message_post("%s gained %dxp", name.c_str(), gain);
     }
   }
 }

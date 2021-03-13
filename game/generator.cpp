@@ -3,6 +3,7 @@
 #include "gc.h"
 #include "common.h"
 #include "perlin.h"
+#include "bitset2d.h"
 
 // game
 #include "generator.h"
@@ -15,7 +16,6 @@ void generator_2_t::generate(int32_t gen_level) {
   assert(game.player);
   game.entity_clear_all();
   game.entity_add(game.player);
-  game.player->order = 0;  // XXX: this is a hack (reset orders between levels)
 
   auto &map = game.map_get();
   const int32_t map_w = map.width;
@@ -33,6 +33,9 @@ void generator_2_t::generate(int32_t gen_level) {
   place_walls();
   mask_border();
   place_player();
+  // fill unreachable space so no items can be placed there
+  fill_invalid(game.player->pos);
+
   place_items();
   place_grass();
 }
@@ -90,7 +93,9 @@ void generator_2_t::place_walls() {
 void generator_2_t::place_entity(librl::entity_t *e) {
   auto &map = game.map_get();
   for (int i = 0;; ++i) {
-    assert(i < 100);
+    if (i > 100) {
+      return;  // oh noes
+    }
     e->pos = rand_map_coord();
     if (map.get(e->pos.x, e->pos.y) == tile_floor) {
       break;
@@ -105,7 +110,7 @@ void generator_2_t::drop_enemy() {
 
   int32_t l = clamp<int32_t>(0, int32_t(librl::random(seed, level / 2)), 6);
 
-  switch (false ? 1 : l) {
+  switch (false ? 5 : l) {
   case 0: e = game.gc.alloc<game::ent_goblin_t>(game); break;
   case 1: e = game.gc.alloc<game::ent_vampire_t>(game); break;
   case 2: e = game.gc.alloc<game::ent_ogre_t>(game); break;
@@ -121,16 +126,34 @@ void generator_2_t::drop_enemy() {
 void generator_2_t::drop_entity() {
   using namespace librl;
   librl::entity_t *e = nullptr;
-  switch (librl::random(seed, 7)) {
+
+  const int32_t l = int32_t(librl::random(seed, min(level, 8)));
+  switch (l) {
   case 0: e = game.gc.alloc<game::ent_club_t>(game); break;
   case 1: e = game.gc.alloc<game::ent_mace_t>(game); break;
-  case 2: e = game.gc.alloc<game::ent_sword_t>(game); break;
-  case 3: e = game.gc.alloc<game::ent_dagger_t>(game); break;
+  case 2: e = game.gc.alloc<game::ent_shield_t>(game); break;
+  case 3: e = game.gc.alloc<game::ent_cloak_t>(game); break;
   case 4: e = game.gc.alloc<game::ent_leather_armour_t>(game); break;
-  case 5: e = game.gc.alloc<game::ent_metal_armour_t>(game); break;
-  case 6: e = game.gc.alloc<game::ent_cloak_t>(game); break;
+  case 5: e = game.gc.alloc<game::ent_dagger_t>(game); break;
+  case 6: e = game.gc.alloc<game::ent_metal_armour_t>(game); break;
+  case 7: e = game.gc.alloc<game::ent_sword_t>(game); break;
   }
   assert(e);
+
+  if (entity_equip_t *i = e->as_a<entity_equip_t>()) {
+
+    if (i->damage) {
+      i->damage += int(random(seed, level / 2));
+    }
+    else {
+      i->defense += int(random(seed, level / 2));
+    }
+
+    i->crit     += int(random(seed, level / 2));
+    i->evasion  += int(random(seed, level / 2));
+    i->accuracy += int(random(seed, level / 2));
+  }
+
   place_entity(e);
 }
 
@@ -213,6 +236,60 @@ void generator_2_t::place_grass() {
         if (v > 64) {
           c = tile_grass;
         }
+      }
+    }
+  }
+}
+
+void generator_2_t::fill_invalid(const librl::int2 &p) {
+  using namespace librl;
+  auto &map = game.map_get();
+  auto &walls = game.walls_get();
+  std::vector<int2> stack;
+  bitset2d_t bits{ int(map.width), int(map.height) };
+  bits.clear();
+  // get current walls
+  for (int y = 0; y < int(map.height); ++y) {
+    for (int x = 0; x < int(map.width); ++x) {
+      if (map.get(int2{ x, y }) == tile_wall) {
+        bits.set(int2{ x, y });
+      }
+    }
+  }
+  // flood fill
+  stack.push_back(p);
+  while (!stack.empty()) {
+
+    const int2 s = stack.back();
+    stack.resize(stack.size() - 1);
+
+    const int2 a = int2{ s.x - 1, s.y };
+    if ((s.x > 0) && !bits.get(a)) {
+      bits.set(a);
+      stack.push_back(a);
+    }
+    const int2 b = int2{ s.x + 1, s.y };
+    if ((s.x < int(map.width)-1) && !bits.get(b)) {
+      bits.set(b);
+      stack.push_back(b);
+    }
+    const int2 c = int2{ s.x, s.y - 1 };
+    if ((s.y > 0) && !bits.get(c)) {
+      bits.set(c);
+      stack.push_back(c);
+    }
+    const int2 d = int2{ s.x, s.y + 1 };
+    if ((s.x < int(map.height)-1) && !bits.get(d)) {
+      bits.set(d);
+      stack.push_back(d);
+    }
+  }
+  // fill in walls
+  for (int y = 0; y < int(map.height); ++y) {
+    for (int x = 0; x < int(map.width); ++x) {
+      if (!bits.get(int2{ x, y })) {
+        map.get(int2{ x, y }) = tile_wall;
+        walls.set(int2{ x, y });
       }
     }
   }

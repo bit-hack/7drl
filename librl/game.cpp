@@ -14,16 +14,12 @@ void game_t::tick_game() {
     assert(e);
     gc.check_in(e);
   }
-  gc.check_in(player);
-
-  // always tick the first entity
-  if (!entities.empty()) {
-    entity_t *ent = entities.front();
-    assert(ent);
-    if (ent->turn()) {
-      post_turn();
-    }
+  if (player) {
+    gc.check_in(player);
   }
+
+  // tick the next entitys
+  tick_entities();
 
   // if we have been instructed to generate a new map
   if (generate_new_map) {
@@ -31,35 +27,16 @@ void game_t::tick_game() {
     map_create(map->width, map->height);
     generate_new_map = false;
   }
-
   // run a garbage collection cycle
   gc.collect();
 }
 
 void game_t::post_turn() {
-  // update the potential field
-  assert(pfield);
-  pfield->update();
-
-#if 0
-  // bubble entitiy down to new order slot
-  auto itt = entities.begin();
-  while (std::next(itt) != entities.end()) {
-    if ((*itt)->order >= (*std::next(itt))->order) {
-      std::swap(*itt, *std::next(itt));
-      itt = std::next(itt);
-    }
-    else {
-      break;
-    }
+  if (entities.empty() || !player) {
+    return;
   }
-#else
-  // move first to last
-  std::rotate(entities.begin(), entities.begin() + 1, entities.end());
-#endif
-
-  // re-render the map
-  render();
+  // tick the next entity
+  tick_index++;
 }
 
 void game_t::render_entities() {
@@ -115,9 +92,18 @@ void game_t::message_post(const char *str, ...) {
   va_end(args);
   temp.back() = '\0';
 
-  c.fill(int2{ 0, c.height - 2 }, int2{ c.width, c.height - 1 }, ' ');
+  c.attrib.fill(
+    int2{ 0,       c.height - 5 },
+    int2{ c.width, c.height - 1 },
+    c.colour);
+  c.window_set(
+    int2{ 0,       c.height - 5 },
+    int2{ c.width, c.height - 1 });
   c.caret_set(int2{ 0, c.height - 2 });
+  c.window_scroll();
+  c.fill(int2{ 0, c.height - 2 }, int2{ c.width, c.height - 1 }, ' ');
   c.puts(temp.data());
+  c.window_reset();
 }
 
 }  // namespace librl

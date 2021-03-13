@@ -51,6 +51,28 @@ struct buffer2d_t {
     }
   }
 
+  void fill(int2 min, int2 max, type_t val) {
+    min.x = librl::max<int>(0, min.x);
+    max.x = librl::min<int>(max.x, width);
+    min.y = librl::max<int>(0, min.y);
+    max.y = librl::min<int>(max.y, height);
+    type_t *dst = data.get() + min.y * width;
+    for (int y = min.y; y < max.y; ++y) {
+      for (int x = min.x; x < max.x; ++x) {
+        dst[x] = val;
+      }
+      dst += width;
+    }
+  }
+
+  void fill(type_t val) {
+    const int size = width * height;
+    type_t *dst = data.get();
+    for (int x = 0; x < size; ++x) {
+      dst[x] = val;
+    }
+  }
+
   const uint32_t width, height;
 
 protected:

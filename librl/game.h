@@ -47,10 +47,15 @@ struct game_t {
 
   game_t()
     : player(nullptr)
-    , level(3)
+    , level(1)
     , seed(12345)
     , generate_new_map(false)
+    , tick_index(0)
   {
+  }
+
+  void set_seed(uint32_t s) {
+    seed = s;
   }
 
   void map_create(uint32_t w, uint32_t h);
@@ -125,15 +130,14 @@ struct game_t {
     return true;
   }
 
-  void delay(uint32_t ms) {
-    // todo
-  }
+  virtual void delay(uint32_t ms) = 0;
 
   virtual void tick() {
     tick_game();
   }
 
   void tick_game();
+  virtual void tick_entities() = 0;
 
   uint64_t random() {
     return librl::random(seed);
@@ -168,6 +172,7 @@ protected:
 
   int level;
   uint64_t seed;
+  uint32_t tick_index;
 
   std::deque<input_event_t> input;
   std::vector<entity_t *> entities;
