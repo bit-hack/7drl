@@ -3,7 +3,7 @@
 
 namespace game {
 
-ent_player_t::ent_player_t(librl::game_t &game)
+ent_player_t::ent_player_t(game::game_t &game)
   : librl::entity_actor_t(TYPE, game)
   , user_dir{ 0, 0 }
 {

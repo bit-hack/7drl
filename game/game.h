@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 
+// librl
 #include "console.h"
 #include "gc.h"
 #include "entity.h"
@@ -11,7 +12,7 @@
 #include "bitset2d.h"
 
 
-namespace librl {
+namespace game {
 
 struct map_generator_t {
 
@@ -40,7 +41,7 @@ struct input_event_t {
     mouse_lmb,
     mouse_rmb,
   } type;
-  int2 mouse_pos;
+  librl::int2 mouse_pos;
 };
 
 struct game_t {
@@ -54,111 +55,52 @@ struct game_t {
   {
   }
 
-  void set_seed(uint32_t s) {
-    seed = s;
-  }
+  void set_seed(uint32_t s);
 
   void map_create(uint32_t w, uint32_t h);
 
-  buffer2d_u8_t &map_get() {
-    assert(map);
-    return *map;
-  }
+  librl::buffer2d_u8_t &map_get();
 
   virtual void render();
 
-  void console_create(uint32_t w, uint32_t h) {
-    console.reset(new console_t(w, h));
-    console->fill(' ');
-  }
+  void console_create(uint32_t w, uint32_t h);
 
-  console_t &console_get() {
-    assert(console);
-    return *console;
-  }
+  librl::console_t &console_get();
 
-  bitset2d_t &walls_get() {
-    assert(walls);
-    return *walls;
-  }
+  librl::bitset2d_t &walls_get();
 
-  entity_t *entity_add(entity_t *ent) {
-    assert(ent);
-    // xxx: this is so crap, please fix me
-    auto itt = std::find(entities.begin(), entities.end(), ent);
-    if (itt == entities.end()) {
-      entities.push_back(ent);
-    }
-    return ent;
-  }
+  librl::entity_t *entity_add(librl::entity_t *ent);
 
-  void entity_remove(entity_t *ent) {
-    // xxx: improve me
-    auto itt = entities.begin();
-    while (itt != entities.end()) {
-      if (*itt == ent) {
-        entities.erase(itt);
-        return;
-      }
-      else {
-        ++itt;
-      }
-    }
-  }
+  void entity_remove(librl::entity_t *ent);
 
-  void entity_clear_all() {
-    entities.clear();
-    // note: we dont clear game.player here on purpose as we want that player
-    // to persist between level changes
-  }
+  void entity_clear_all();
 
-  entity_t *entity_find(const int2 &p) const;
+  librl::entity_t *entity_find(const librl::int2 &p) const;
 
   // post a message to the player
   void message_post(const char *fmt, ...);
 
-  void input_event_push(const input_event_t &event) {
-    input.push_back(event);
-  }
+  void input_event_push(const input_event_t &event);
 
-  bool input_event_pop(input_event_t &out) {
-    if (input.empty()) {
-      return false;
-    }
-    out = input.front();
-    input.pop_front();
-    return true;
-  }
+  bool input_event_pop(input_event_t &out);
 
   virtual void delay(uint32_t ms) = 0;
 
-  virtual void tick() {
-    tick_game();
-  }
+  virtual void tick();
 
   void tick_game();
   virtual void tick_entities() = 0;
 
-  uint64_t random() {
-    return librl::random(seed);
-  }
+  uint64_t random();
 
-  bool is_player_turn() const {
-    return entities.empty() ? false : (entities.front() == player);
-  }
+  bool is_player_turn() const;
 
-  pfield_t &pfield_get() {
-    assert(pfield);
-    return *pfield;
-  }
+  librl::pfield_t &pfield_get();
 
-  void map_next() {
-    generate_new_map = true;
-    ++level;
-  }
+  void map_next();
 
-  gc_t gc;
-  entity_t *player;
+  librl::gc_t gc;
+  librl::entity_t *player;
 
 protected:
 
@@ -175,13 +117,13 @@ protected:
   uint32_t tick_index;
 
   std::deque<input_event_t> input;
-  std::vector<entity_t *> entities;
+  std::vector<librl::entity_t *> entities;
   std::unique_ptr<map_generator_t> generator;
-  std::unique_ptr<buffer2d_u8_t> map;
-  std::unique_ptr<console_t> console;
-  std::unique_ptr<pfield_t> pfield;
-  std::unique_ptr<bitset2d_t> fog;
-  std::unique_ptr<bitset2d_t> walls;
+  std::unique_ptr<librl::buffer2d_u8_t> map;
+  std::unique_ptr<librl::console_t> console;
+  std::unique_ptr<librl::pfield_t> pfield;
+  std::unique_ptr<librl::bitset2d_t> fog;
+  std::unique_ptr<librl::bitset2d_t> walls;
 };
 
-} // namespace librl
+} // namespace game

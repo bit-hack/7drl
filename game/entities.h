@@ -5,12 +5,13 @@
 // librl
 #include "entity.h"
 #include "gc.h"
-#include "game.h"
 #include "raycast.h"
 
 // game
 #include "enums.h"
 #include "inventory.h"
+#include "game.h"
+
 
 namespace game {
 
@@ -18,7 +19,7 @@ struct ent_player_t : public librl::entity_actor_t {
 
   static const uint32_t TYPE = ent_type_player;
 
-  ent_player_t(librl::game_t &game);
+  ent_player_t(game_t &game);
 
   int32_t get_accuracy() const override { return librl::entity_actor_t::get_accuracy() + 50; }
   int32_t get_damage() const   override { return librl::entity_actor_t::get_damage() + 10; }
@@ -49,7 +50,7 @@ struct ent_player_t : public librl::entity_actor_t {
 
 struct ent_enemy_t : public librl::entity_actor_t {
 
-  ent_enemy_t(uint32_t type, librl::game_t &game)
+  ent_enemy_t(uint32_t type, game::game_t &game)
     : librl::entity_actor_t(type, game)
     , seed(game.random())
   {
@@ -105,7 +106,7 @@ struct ent_goblin_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_goblin;
 
-  ent_goblin_t(librl::game_t &game)
+  ent_goblin_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "goblin";
@@ -121,7 +122,7 @@ struct ent_vampire_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_vampire;
 
-  ent_vampire_t(librl::game_t &game)
+  ent_vampire_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "vampire";
@@ -155,7 +156,7 @@ struct ent_ogre_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_ogre;
 
-  ent_ogre_t(librl::game_t &game)
+  ent_ogre_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "ogre";
@@ -179,7 +180,7 @@ struct ent_wrath_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_wrath;
 
-  ent_wrath_t(librl::game_t &game)
+  ent_wrath_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
     , timer(2)
   {
@@ -222,7 +223,7 @@ struct ent_dwarf_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_dwarf;
 
-  ent_dwarf_t(librl::game_t &game)
+  ent_dwarf_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "dwarf";
@@ -273,7 +274,7 @@ struct ent_warlock_t : public ent_enemy_t {
 
   static const uint32_t spawn_time = 10;
 
-  ent_warlock_t(librl::game_t &game)
+  ent_warlock_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
     , timer(spawn_time / 2)
   {
@@ -320,7 +321,7 @@ struct ent_skeleton_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_mimic;
 
-  ent_skeleton_t(librl::game_t &game)
+  ent_skeleton_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "skeleton";
@@ -337,7 +338,7 @@ struct ent_mimic_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_mimic;
 
-  ent_mimic_t(librl::game_t &game)
+  ent_mimic_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
     , trigger(false)
   {
@@ -367,7 +368,7 @@ struct ent_potion_t : public librl::entity_item_t {
 
   static const uint32_t TYPE = ent_type_potion;
 
-  ent_potion_t(librl::game_t &game)
+  ent_potion_t(game::game_t &game)
     : librl::entity_item_t(TYPE, game, /* can_pickup */ true)
     , recovery(20)
   {
@@ -379,7 +380,7 @@ struct ent_potion_t : public librl::entity_item_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_potion;
       con.chars.get(pos.x, pos.y) = 'p';
     }
@@ -407,7 +408,7 @@ struct ent_stairs_t : public librl::entity_item_t {
 
   static const uint32_t TYPE = ent_type_stairs;
 
-  ent_stairs_t(librl::game_t &game)
+  ent_stairs_t(game::game_t &game)
     : librl::entity_item_t(TYPE, game, /* can_pickup */ false)
     , seen(false)
   {
@@ -440,7 +441,7 @@ struct ent_gold_t : public librl::entity_item_t {
 
   static const uint32_t TYPE = ent_type_gold;
 
-  ent_gold_t(librl::game_t &game)
+  ent_gold_t(game::game_t &game)
     : librl::entity_item_t(TYPE, game, /* can_pickup */ false)
     , seed(game.random())
   {
@@ -473,7 +474,7 @@ struct ent_club_t : public librl::entity_equip_t {
 
   static const uint32_t TYPE = ent_type_club;
 
-  ent_club_t(librl::game_t &game)
+  ent_club_t(game::game_t &game)
     : librl::entity_equip_t(TYPE, game)
   {
     name = "club";
@@ -486,7 +487,7 @@ struct ent_club_t : public librl::entity_equip_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_item;
       con.chars.get(pos.x, pos.y) = '?';
     }
@@ -497,7 +498,7 @@ struct ent_mace_t : public librl::entity_equip_t {
 
   static const uint32_t TYPE = ent_type_mace;
 
-  ent_mace_t(librl::game_t &game)
+  ent_mace_t(game::game_t &game)
     : librl::entity_equip_t(TYPE, game)
   {
     name = "mace";
@@ -510,7 +511,7 @@ struct ent_mace_t : public librl::entity_equip_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_item;
       con.chars.get(pos.x, pos.y) = '?';
     }
@@ -521,7 +522,7 @@ struct ent_sword_t : public librl::entity_equip_t {
 
   static const uint32_t TYPE = ent_type_sword;
 
-  ent_sword_t(librl::game_t &game)
+  ent_sword_t(game::game_t &game)
     : librl::entity_equip_t(TYPE, game)
   {
     name = "sword";
@@ -533,7 +534,7 @@ struct ent_sword_t : public librl::entity_equip_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_item;
       con.chars.get(pos.x, pos.y) = '?';
     }
@@ -544,7 +545,7 @@ struct ent_dagger_t : public librl::entity_equip_t {
 
   static const uint32_t TYPE = ent_type_dagger;
 
-  ent_dagger_t(librl::game_t &game)
+  ent_dagger_t(game::game_t &game)
     : librl::entity_equip_t(TYPE, game)
   {
     name = "dagger";
@@ -557,7 +558,7 @@ struct ent_dagger_t : public librl::entity_equip_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_item;
       con.chars.get(pos.x, pos.y) = '?';
     }
@@ -568,7 +569,7 @@ struct ent_leather_armour_t : public librl::entity_equip_t {
 
   static const uint32_t TYPE = ent_type_leather_armour;
 
-  ent_leather_armour_t(librl::game_t &game)
+  ent_leather_armour_t(game::game_t &game)
     : librl::entity_equip_t(TYPE, game)
   {
     name = "leather armour";
@@ -580,7 +581,7 @@ struct ent_leather_armour_t : public librl::entity_equip_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_item;
       con.chars.get(pos.x, pos.y) = '?';
     }
@@ -591,7 +592,7 @@ struct ent_shield_t : public librl::entity_equip_t {
 
   static const uint32_t TYPE = ent_type_shield;
 
-  ent_shield_t(librl::game_t &game)
+  ent_shield_t(game::game_t &game)
     : librl::entity_equip_t(TYPE, game)
   {
     name = "shield";
@@ -604,7 +605,7 @@ struct ent_shield_t : public librl::entity_equip_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_item;
       con.chars.get(pos.x, pos.y) = '?';
     }
@@ -615,7 +616,7 @@ struct ent_metal_armour_t : public librl::entity_equip_t {
 
   static const uint32_t TYPE = ent_type_leather_armour;
 
-  ent_metal_armour_t(librl::game_t &game)
+  ent_metal_armour_t(game::game_t &game)
     : librl::entity_equip_t(TYPE, game)
   {
     name = "leather armour";
@@ -628,7 +629,7 @@ struct ent_metal_armour_t : public librl::entity_equip_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_item;
       con.chars.get(pos.x, pos.y) = '?';
     }
@@ -639,7 +640,7 @@ struct ent_cloak_t : public librl::entity_equip_t {
 
   static const uint32_t TYPE = ent_type_leather_armour;
 
-  ent_cloak_t(librl::game_t &game)
+  ent_cloak_t(game::game_t &game)
     : librl::entity_equip_t(TYPE, game)
   {
     name = "cloak";
@@ -652,7 +653,7 @@ struct ent_cloak_t : public librl::entity_equip_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, 0x1, game.map_get())) {
+    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
       con.attrib.get(pos.x, pos.y) = colour_item;
       con.chars.get(pos.x, pos.y) = '?';
     }

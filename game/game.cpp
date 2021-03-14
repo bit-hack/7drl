@@ -6,7 +6,9 @@
 #include "raycast.h"
 #include "perlin.h"
 
-namespace librl {
+using namespace librl;
+
+namespace game {
 
 void game_t::tick_game() {
   // update entities
@@ -106,4 +108,93 @@ void game_t::message_post(const char *str, ...) {
   c.window_reset();
 }
 
-}  // namespace librl
+void game_t::set_seed(uint32_t s) {
+  seed = s;
+}
+
+librl::buffer2d_u8_t &game_t::map_get() {
+  assert(map);
+  return *map;
+}
+
+void game_t::console_create(uint32_t w, uint32_t h) {
+  console.reset(new librl::console_t(w, h));
+  console->fill(' ');
+}
+
+librl::console_t &game_t::console_get() {
+  assert(console);
+  return *console;
+}
+
+librl::bitset2d_t &game_t::walls_get() {
+  assert(walls);
+  return *walls;
+}
+
+librl::entity_t *game_t::entity_add(librl::entity_t *ent) {
+  assert(ent);
+  // xxx: this is so crap, please fix me
+  auto itt = std::find(entities.begin(), entities.end(), ent);
+  if (itt == entities.end()) {
+    entities.push_back(ent);
+  }
+  return ent;
+}
+
+void game_t::entity_remove(librl::entity_t *ent) {
+  // xxx: improve me
+  auto itt = entities.begin();
+  while (itt != entities.end()) {
+    if (*itt == ent) {
+      entities.erase(itt);
+      return;
+    }
+    else {
+      ++itt;
+    }
+  }
+}
+
+void game_t::entity_clear_all() {
+  entities.clear();
+  // note: we dont clear game.player here on purpose as we want that player
+  // to persist between level changes
+}
+
+void game_t::input_event_push(const input_event_t &event) {
+  input.push_back(event);
+}
+
+bool game_t::input_event_pop(input_event_t &out) {
+  if (input.empty()) {
+    return false;
+  }
+  out = input.front();
+  input.pop_front();
+  return true;
+}
+
+void game_t::tick() {
+  tick_game();
+}
+
+uint64_t game_t::random() {
+  return librl::random(seed);
+}
+
+bool game_t::is_player_turn() const {
+  return entities.empty() ? false : (entities.front() == player);
+}
+
+librl::pfield_t &game_t::pfield_get() {
+  assert(pfield);
+  return *pfield;
+}
+
+void game_t::map_next() {
+  generate_new_map = true;
+  ++level;
+}
+
+}  // namespace game

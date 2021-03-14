@@ -7,12 +7,12 @@
 
 namespace game {
 
-struct generator_2_t : public librl::map_generator_t {
+struct generator_2_t : public game::map_generator_t {
 
   static const uint32_t num_colours = 3;
 
-  generator_2_t(librl::game_t &game)
-    : librl::map_generator_t(game)
+  generator_2_t(game::game_t &game)
+    : game::map_generator_t(game)
     , level(0)
   {
   }

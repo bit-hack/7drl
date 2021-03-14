@@ -6,9 +6,11 @@
 #include "common.h"
 #include "inventory.h"
 
-namespace librl {
+namespace game {
+  struct game_t;
+}
 
-struct game_t;
+namespace librl {
 
 enum subclass_t {
   ent_subclass_actor,
@@ -18,7 +20,7 @@ enum subclass_t {
 
 struct entity_t : librl::gc_base_t {
 
-  entity_t(const uint32_t type, const uint32_t subclass, game_t &game)
+  entity_t(const uint32_t type, const uint32_t subclass, game::game_t &game)
     : pos(int2{-1, -1})
     , type(type)
     , subclass(subclass)
@@ -60,7 +62,7 @@ struct entity_t : librl::gc_base_t {
   std::string name;
 
 protected:
-  game_t &game;
+  game::game_t &game;
 };
 
 struct entity_actor_t : public entity_t {
@@ -68,7 +70,7 @@ struct entity_actor_t : public entity_t {
   static const subclass_t SUBCLASS = ent_subclass_actor;
   static const uint32_t TYPE = -1;
 
-  entity_actor_t(const uint32_t type, game_t &game)
+  entity_actor_t(const uint32_t type, game::game_t &game)
     : entity_t(type, SUBCLASS, game)
     , hp(0)
     , hp_max(0)
@@ -98,7 +100,7 @@ struct entity_item_t : public entity_t {
   static const subclass_t SUBCLASS = ent_subclass_item;
   static const uint32_t TYPE = -1;
 
-  entity_item_t(const uint32_t type, game_t &game, bool can_pickup)
+  entity_item_t(const uint32_t type, game::game_t &game, bool can_pickup)
     : entity_t(type, SUBCLASS, game)
     , can_pickup(can_pickup)
   {
@@ -120,7 +122,7 @@ struct entity_equip_t : public entity_t {
   static const subclass_t SUBCLASS = ent_subclass_equip;
   static const uint32_t TYPE = -1;
 
-  entity_equip_t(const uint32_t type, game_t &game)
+  entity_equip_t(const uint32_t type, game::game_t &game)
     : entity_t(type, SUBCLASS, game)
     , damage(0)
     , accuracy(0)

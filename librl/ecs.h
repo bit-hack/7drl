@@ -60,9 +60,9 @@ struct ecs_store_t {
     return (itt == map.end()) ? nullptr : itt->second;
   }
 
-  type_t *alloc(ecs_id_t id) {
+  type_t *insert(ecs_id_t id, type_t *inst) {
     assert(map.find(id) == map.end());
-    return map[id] = new type_t;
+    return map[id] = inst;
   }
 
   void collect(const std::unordered_map<ecs_id_t, int32_t> &refs) {
