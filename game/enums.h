@@ -46,8 +46,9 @@ enum {
 };
 
 enum {
-  screen_width  = 512,
-  screen_height = 512,
+  screen_width  = 640,
+  screen_height = 480,
+  screen_scale  = 1,
 };
 
 enum {

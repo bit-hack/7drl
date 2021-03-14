@@ -409,6 +409,7 @@ struct ent_stairs_t : public librl::entity_item_t {
 
   ent_stairs_t(librl::game_t &game)
     : librl::entity_item_t(TYPE, game, /* can_pickup */ false)
+    , seen(false)
   {
     name = "stairs";
   }
@@ -418,7 +419,8 @@ struct ent_stairs_t : public librl::entity_item_t {
     if (!game.player) {
       return;
     }
-    if (librl::raycast(game.player->pos, pos, game.walls_get())) {
+    if (seen || librl::raycast(game.player->pos, pos, game.walls_get())) {
+      seen = true;
       con.attrib.get(pos.x, pos.y) = colour_stairs;
       con.chars.get(pos.x, pos.y) = '=';
     }
@@ -430,6 +432,8 @@ struct ent_stairs_t : public librl::entity_item_t {
       game.map_next();
     }
   }
+
+  bool seen;
 };
 
 struct ent_gold_t : public librl::entity_item_t {

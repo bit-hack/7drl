@@ -1,3 +1,5 @@
+//#include <Windows.h>
+
 #define _SDL_main_h
 #include <SDL.h>
 
@@ -102,7 +104,7 @@ struct program_t {
       switch (event.key.keysym.sym) {
       case SDLK_SPACE:
         // XXX: remove this!
-        game.map_next();
+//        game.map_next();
         break;
       }
       switch (event.key.keysym.sym) {
@@ -206,8 +208,9 @@ struct game_7drl_t : public librl::game_t {
     assert(player && player->is_type<ent_player_t>());
     ent_player_t &p = *static_cast<ent_player_t*>(player);
     if (use) {
+      librl::entity_t *item = p.inventory.slots()[inv_slot];
       p.inventory.use(inv_slot, player);
-      inv_slot = 0;
+//      inv_slot = 0;
     }
     if (drop) {
       librl::entity_t *item = p.inventory.slots()[inv_slot];
@@ -286,6 +289,7 @@ struct game_7drl_t : public librl::game_t {
       case librl::input_event_t::key_u:
         if (screen == screen_title) {
           screen = screen_game;
+          console->fill(' ');
           render();
         }
         use = true;
@@ -533,7 +537,13 @@ struct game_7drl_t : public librl::game_t {
 
 } // namespace game
 
+extern "C" {
+int __stdcall FreeConsole(void);
+}
+
 int main(int argc, char *args[]) {
+
+  FreeConsole();
 
   game::game_7drl_t game;
   game.set_seed(SDL_GetTicks());
@@ -541,7 +551,8 @@ int main(int argc, char *args[]) {
   program_t prog{ game };
 
   if (!prog.init(game::screen_width,
-                 game::screen_height, 1)) {
+                 game::screen_height,
+                 game::screen_scale)) {
     return 1;
   }
 
