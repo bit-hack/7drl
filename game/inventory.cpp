@@ -1,7 +1,10 @@
-#include "entity.h"
+#include "entities.h"
 #include "inventory.h"
 
-namespace librl {
+
+using namespace librl;
+
+namespace game {
 
 void inventory_t::_enumerate(gc_enum_t &func) {
   for (entity_t *e : slot) {

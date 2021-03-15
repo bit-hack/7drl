@@ -13,7 +13,7 @@ using namespace librl;
 
 namespace game {
 
-void game_t::tick_game() {
+void game_7drl_t::tick_game() {
   // update entities
   for (auto &e : entities) {
     assert(e);
@@ -36,22 +36,14 @@ void game_t::tick_game() {
   gc.collect();
 }
 
-void game_t::post_turn() {
-  if (entities.empty() || !player) {
-    return;
-  }
-  // tick the next entity
-  tick_index++;
-}
-
-void game_t::render_entities() {
+void game_7drl_t::render_entities() {
   for (auto &e : entities) {
     assert(e);
     e->render();
   }
 }
 
-void game_t::map_create(uint32_t w, uint32_t h) {
+void game_7drl_t::map_create(uint32_t w, uint32_t h) {
   // clear the old map entities entirely
   entities.clear();
   // create various maps and arrays
@@ -68,16 +60,7 @@ void game_t::map_create(uint32_t w, uint32_t h) {
   render();
 }
 
-void game_t::render() {
-  if (!player) {
-    return;
-  }
-  render_map();
-  render_entities();
-  render_hud();
-}
-
-entity_t *game_t::entity_find(const int2 &p) const {
+entity_t *game_7drl_t::entity_find(const int2 &p) const {
   for (entity_t *e : entities) {
     if (e->pos == p) {
       return e;
@@ -86,7 +69,7 @@ entity_t *game_t::entity_find(const int2 &p) const {
   return nullptr;
 }
 
-void game_t::message_post(const char *str, ...) {
+void game_7drl_t::message_post(const char *str, ...) {
   assert(console);
   auto &c = *console;
 
@@ -111,31 +94,31 @@ void game_t::message_post(const char *str, ...) {
   c.window_reset();
 }
 
-void game_t::set_seed(uint32_t s) {
+void game_7drl_t::set_seed(uint32_t s) {
   seed = s;
 }
 
-librl::buffer2d_u8_t &game_t::map_get() {
+librl::buffer2d_u8_t &game_7drl_t::map_get() {
   assert(map);
   return *map;
 }
 
-void game_t::console_create(uint32_t w, uint32_t h) {
+void game_7drl_t::console_create(uint32_t w, uint32_t h) {
   console.reset(new librl::console_t(w, h));
   console->fill(' ');
 }
 
-librl::console_t &game_t::console_get() {
+librl::console_t &game_7drl_t::console_get() {
   assert(console);
   return *console;
 }
 
-librl::bitset2d_t &game_t::walls_get() {
+librl::bitset2d_t &game_7drl_t::walls_get() {
   assert(walls);
   return *walls;
 }
 
-librl::entity_t *game_t::entity_add(librl::entity_t *ent) {
+entity_t *game_7drl_t::entity_add(entity_t *ent) {
   assert(ent);
   // xxx: this is so crap, please fix me
   auto itt = std::find(entities.begin(), entities.end(), ent);
@@ -145,7 +128,7 @@ librl::entity_t *game_t::entity_add(librl::entity_t *ent) {
   return ent;
 }
 
-void game_t::entity_remove(librl::entity_t *ent) {
+void game_7drl_t::entity_remove(entity_t *ent) {
   // xxx: improve me
   auto itt = entities.begin();
   while (itt != entities.end()) {
@@ -159,17 +142,17 @@ void game_t::entity_remove(librl::entity_t *ent) {
   }
 }
 
-void game_t::entity_clear_all() {
+void game_7drl_t::entity_clear_all() {
   entities.clear();
   // note: we dont clear game.player here on purpose as we want that player
   // to persist between level changes
 }
 
-void game_t::input_event_push(const input_event_t &event) {
+void game_7drl_t::input_event_push(const input_event_t &event) {
   input.push_back(event);
 }
 
-bool game_t::input_event_pop(input_event_t &out) {
+bool game_7drl_t::input_event_pop(input_event_t &out) {
   if (input.empty()) {
     return false;
   }
@@ -178,33 +161,33 @@ bool game_t::input_event_pop(input_event_t &out) {
   return true;
 }
 
-void game_t::tick() {
-  tick_game();
-}
-
-uint64_t game_t::random() {
+uint64_t game_7drl_t::random() {
   return librl::random(seed);
 }
 
-bool game_t::is_player_turn() const {
+bool game_7drl_t::is_player_turn() const {
   return entities.empty() ? false : (entities.front() == player);
 }
 
-librl::pfield_t &game_t::pfield_get() {
+librl::pfield_t &game_7drl_t::pfield_get() {
   assert(pfield);
   return *pfield;
 }
 
-void game_t::map_next() {
+void game_7drl_t::map_next() {
   generate_new_map = true;
   ++level;
 }
 
 game_7drl_t::game_7drl_t()
   : screen(screen_title)
-  , time_thresh(0)
+  , player(nullptr)
+  , level(1)
+  , seed(12345)
+  , generate_new_map(false)
+  , tick_index(0)
 {
-  generator.reset(new game::generator_2_t(*this));
+  generator.reset(new game::map_generator_t(*this));
 }
 
 void game_7drl_t::create_player() {
@@ -213,15 +196,15 @@ void game_7drl_t::create_player() {
 }
 
 void game_7drl_t::tick_inventory(const librl::int2 &dir, bool use, bool drop) {
-  inv_slot = librl::clamp<int>(0, inv_slot + dir.y, librl::inventory_t::num_slots - 1);
+  inv_slot = librl::clamp<int>(0, inv_slot + dir.y, inventory_t::num_slots - 1);
   assert(player && player->is_type<ent_player_t>());
   ent_player_t &p = *static_cast<ent_player_t*>(player);
   if (use) {
-    librl::entity_t *item = p.inventory.slots()[inv_slot];
+    entity_t *item = p.inventory.slots()[inv_slot];
     p.inventory.use(inv_slot, player);
   }
   if (drop) {
-    librl::entity_t *item = p.inventory.slots()[inv_slot];
+    entity_t *item = p.inventory.slots()[inv_slot];
     if (item) {
       message_post("%s dropped %s", player->name.c_str(), item->name.c_str());
       p.inventory.drop(inv_slot);
@@ -277,12 +260,6 @@ void game_7drl_t::tick_entities() {
 }
 
 void game_7drl_t::tick() {
-#if 0
-  if (time_thresh >= SDL_GetTicks()) {
-    return;
-  }
-#endif
-
   librl::int2 dir = { 0, 0 };
   bool use = false;
   bool drop = false;
@@ -379,17 +356,18 @@ void game_7drl_t::tick_death() {
 void game_7drl_t::render() {
   switch (screen) {
   case screen_game:
-    game_t::render();
+    if (!player) {
+      return;
+    }
+    render_map();
+    render_entities();
+    render_hud();
     break;
   case screen_inventory:
     render_inventory();
     render_hud();
     break;
   }
-}
-
-void game_7drl_t::delay(uint32_t ms) {
-  time_thresh = SDL_GetTicks() + ms;
 }
 
 void game_7drl_t::render_inventory() {

@@ -8,10 +8,11 @@
 // game
 #include "generator.h"
 #include "entities.h"
+#include "game.h"
 
 namespace game {
 
-void generator_2_t::generate(int32_t gen_level) {
+void map_generator_t::generate(int32_t gen_level) {
 
   assert(game.player);
   game.entity_clear_all();
@@ -40,7 +41,7 @@ void generator_2_t::generate(int32_t gen_level) {
   place_grass();
 }
 
-void generator_2_t::place_rect() {
+void map_generator_t::place_rect() {
   auto &map = game.map_get();
   const int32_t map_w = map.width;
   const int32_t map_h = map.height;
@@ -64,7 +65,7 @@ void generator_2_t::place_rect() {
   }
 }
 
-void generator_2_t::place_walls() {
+void map_generator_t::place_walls() {
   using namespace librl;
   auto &map = game.map_get();
 
@@ -90,7 +91,7 @@ void generator_2_t::place_walls() {
   }
 }
 
-void generator_2_t::place_entity(librl::entity_t *e) {
+void map_generator_t::place_entity(entity_t *e) {
   auto &map = game.map_get();
   for (int i = 0;; ++i) {
     if (i > 100) {
@@ -104,9 +105,9 @@ void generator_2_t::place_entity(librl::entity_t *e) {
   game.entity_add(e);
 }
 
-void generator_2_t::drop_enemy() {
+void map_generator_t::drop_enemy() {
   using namespace librl;
-  librl::entity_t *e = nullptr;
+  entity_t *e = nullptr;
 
   int32_t l = clamp<int32_t>(0, int32_t(librl::random(seed, level / 2)), 6);
 
@@ -123,9 +124,9 @@ void generator_2_t::drop_enemy() {
   place_entity(e);
 }
 
-void generator_2_t::drop_entity() {
+void map_generator_t::drop_entity() {
   using namespace librl;
-  librl::entity_t *e = nullptr;
+  entity_t *e = nullptr;
 
   const int32_t l = int32_t(librl::random(seed, min(level, 8)));
   switch (l) {
@@ -157,7 +158,7 @@ void generator_2_t::drop_entity() {
   place_entity(e);
 }
 
-void generator_2_t::place_items() {
+void map_generator_t::place_items() {
   using namespace librl;
   auto &map = game.map_get();
   for (int32_t i = 0; i < 6; ++i) {
@@ -180,9 +181,9 @@ void generator_2_t::place_items() {
   }
 }
 
-void generator_2_t::place_player() {
+void map_generator_t::place_player() {
   assert(game.player);
-  librl::entity_t *e = game.player;
+  entity_t *e = game.player;
   auto &map = game.map_get();
   for (;;) {
     e->pos = rand_map_coord();
@@ -193,7 +194,7 @@ void generator_2_t::place_player() {
   game.player = game.entity_add(e);
 }
 
-void generator_2_t::mask_border() {
+void map_generator_t::mask_border() {
   using namespace librl;
   auto &map = game.map_get();
   auto &walls = game.walls_get();
@@ -213,7 +214,7 @@ void generator_2_t::mask_border() {
   }
 }
 
-void generator_2_t::place_grass() {
+void map_generator_t::place_grass() {
   librl::perlin_t perlin{ uint32_t(seed) };
 
   const uint32_t num_samples = 10;
@@ -241,7 +242,7 @@ void generator_2_t::place_grass() {
   }
 }
 
-void generator_2_t::fill_invalid(const librl::int2 &p) {
+void map_generator_t::fill_invalid(const librl::int2 &p) {
   using namespace librl;
   auto &map = game.map_get();
   auto &walls = game.walls_get();
@@ -295,7 +296,7 @@ void generator_2_t::fill_invalid(const librl::int2 &p) {
   }
 }
 
-librl::int2 generator_2_t::rand_map_coord() {
+librl::int2 map_generator_t::rand_map_coord() {
   auto &map = game.map_get();
   return librl::int2{ rand(map.width), rand(map.height) };
 }

@@ -9,7 +9,7 @@
 
 struct program_t {
 
-  program_t(game::game_t &game)
+  program_t(game::game_7drl_t &game)
     : game(game)
     , width(0)
     , height(0)
@@ -33,7 +33,7 @@ struct program_t {
 
   void render_x2();
 
-  game::game_t &game;
+  game::game_7drl_t &game;
 
   uint32_t width, height;
   bool active;

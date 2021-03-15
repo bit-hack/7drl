@@ -1,15 +1,16 @@
 #pragma once
 #include <array>
 
+// librl
 #include "gc.h"
 
 
-namespace librl {
+namespace game {
 
 struct entity_t;
 struct entity_equip_t;
 
-struct inventory_t : public gc_base_t {
+struct inventory_t : public librl::gc_base_t {
 
   static const size_t num_slots = 8;
 
@@ -17,7 +18,7 @@ struct inventory_t : public gc_base_t {
     slot.fill(nullptr);
   }
 
-  void _enumerate(gc_enum_t &func) override;
+  void _enumerate(librl::gc_enum_t &func) override;
 
   bool add(entity_t *e);
 

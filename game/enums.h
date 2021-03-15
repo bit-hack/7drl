@@ -41,7 +41,7 @@ enum {
   ent_type_dagger,
   ent_type_leather_armour,
   ent_type_metal_armour,
-  ent_type_cloak_armour,
+  ent_type_cloak,
   ent_type_shield,
 };
 
