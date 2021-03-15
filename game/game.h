@@ -11,20 +11,14 @@
 #include "pfield.h"
 #include "bitset2d.h"
 
+// game
+#include "generator.h"
+#include "enums.h"
+#include "prog.h"
 
 namespace game {
 
-struct map_generator_t {
-
-  map_generator_t(struct game_t &game)
-    : game(game)
-  {
-  }
-
-  virtual void generate(int32_t level) = 0;
-
-  game_t &game;
-};
+struct map_generator_t;
 
 struct input_event_t {
   enum {
@@ -124,6 +118,44 @@ protected:
   std::unique_ptr<librl::pfield_t> pfield;
   std::unique_ptr<librl::bitset2d_t> fog;
   std::unique_ptr<librl::bitset2d_t> walls;
+};
+
+} // namespace game
+
+
+namespace game {
+
+struct game_7drl_t : public game::game_t {
+
+  game_7drl_t();
+
+  void create_player();
+
+  void tick_inventory(const librl::int2 &dir, bool use, bool drop);
+
+  void post_turn() override;
+
+  void tick_entities() override;
+
+  void tick() override;
+
+  void tick_title();
+
+  void tick_death();
+
+  void render() override;
+
+  virtual void delay(uint32_t ms);
+
+  void render_inventory();
+
+  void render_hud();
+
+  void render_map() override;
+
+  uint32_t inv_slot;
+  screen_t screen;
+  uint32_t time_thresh;
 };
 
 } // namespace game

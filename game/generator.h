@@ -7,6 +7,18 @@
 
 namespace game {
 
+struct map_generator_t {
+
+  map_generator_t(struct game_t &game)
+    : game(game)
+  {
+  }
+
+  virtual void generate(int32_t level) = 0;
+
+  game_t &game;
+};
+
 struct generator_2_t : public game::map_generator_t {
 
   static const uint32_t num_colours = 3;
@@ -32,10 +44,7 @@ struct generator_2_t : public game::map_generator_t {
     return librl::random(seed) % max;
   }
 
-  librl::int2 rand_map_coord() {
-    auto &map = game.map_get();
-    return librl::int2{rand(map.width), rand(map.height)};
-  }
+  librl::int2 rand_map_coord();
 
   void mask_border();
 

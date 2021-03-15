@@ -295,4 +295,9 @@ void generator_2_t::fill_invalid(const librl::int2 &p) {
   }
 }
 
+librl::int2 generator_2_t::rand_map_coord() {
+  auto &map = game.map_get();
+  return librl::int2{ rand(map.width), rand(map.height) };
+}
+
 }  // namespace game

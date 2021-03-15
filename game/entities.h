@@ -8,9 +8,9 @@
 #include "raycast.h"
 
 // game
+#include "game.h"
 #include "enums.h"
 #include "inventory.h"
-#include "game.h"
 
 
 namespace game {
