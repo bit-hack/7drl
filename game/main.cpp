@@ -58,7 +58,7 @@ namespace game {
 void game_7drl_t::tick_title() {
   console->puts(splash1);
 }
-}
+}  // namespace game
 
 extern "C" {
 int __stdcall FreeConsole(void);

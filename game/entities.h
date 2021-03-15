@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdio>
-#include <deque>
 
 // librl
 #include "gc.h"
@@ -10,8 +9,6 @@
 #include "enums.h"
 #include "inventory.h"
 
-
-using namespace librl;
 
 namespace game {
 

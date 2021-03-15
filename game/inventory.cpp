@@ -2,11 +2,9 @@
 #include "inventory.h"
 
 
-using namespace librl;
-
 namespace game {
 
-void inventory_t::_enumerate(gc_enum_t &func) {
+void inventory_t::_enumerate(librl::gc_enum_t &func) {
   for (entity_t *e : slot) {
     if (e) {
       func(e);

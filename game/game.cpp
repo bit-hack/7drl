@@ -9,8 +9,6 @@
 #include "entities.h"
 
 
-using namespace librl;
-
 namespace game {
 
 void game_7drl_t::tick_game() {
@@ -47,20 +45,20 @@ void game_7drl_t::map_create(uint32_t w, uint32_t h) {
   // clear the old map entities entirely
   entities.clear();
   // create various maps and arrays
-  fog.reset(new bitset2d_t(w, h));
-  walls.reset(new bitset2d_t(w, h));
-  map.reset(new buffer2d_u8_t(w, h));
+  fog.reset(new librl::bitset2d_t(w, h));
+  walls.reset(new librl::bitset2d_t(w, h));
+  map.reset(new librl::buffer2d_u8_t(w, h));
   // run the map generator
   if (generator) {
     generator->generate(level);
   }
   // create a potential field
   assert(walls);
-  pfield.reset(new pfield_t(*map, *walls));
+  pfield.reset(new librl::pfield_t(*map, *walls));
   render();
 }
 
-entity_t *game_7drl_t::entity_find(const int2 &p) const {
+entity_t *game_7drl_t::entity_find(const librl::int2 &p) const {
   for (entity_t *e : entities) {
     if (e->pos == p) {
       return e;
@@ -70,6 +68,9 @@ entity_t *game_7drl_t::entity_find(const int2 &p) const {
 }
 
 void game_7drl_t::message_post(const char *str, ...) {
+
+  using namespace librl;
+
   assert(console);
   auto &c = *console;
 

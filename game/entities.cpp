@@ -2,8 +2,6 @@
 #include "entities.h"
 
 
-using namespace librl;
-
 namespace game {
 
 ent_enemy_t::ent_enemy_t(uint32_t type, game::game_7drl_t &game)

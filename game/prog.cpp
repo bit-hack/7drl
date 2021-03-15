@@ -1,6 +1,7 @@
 #pragma once
 #include "prog.h"
 
+
 bool program_t::init(uint32_t w, uint32_t h, uint32_t s) {
   assert(screen == nullptr);
   assert(w && h);
