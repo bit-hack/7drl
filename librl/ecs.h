@@ -13,24 +13,8 @@ struct ecs_manager_t;
 
 typedef uint32_t ecs_id_t;
 
-struct ecs_pos_t {
-  int2 pos;
-};
-
-struct ecs_name_t {
-  std::string name;
-};
-
-struct ecs_think_t {
-  ecs_think_t(ecs_id_t id) : id(id) {}
-  const ecs_id_t id;
-  virtual void think(ecs_manager_t &man) = 0;
-};
-
-struct ecs_render_t {
-  ecs_render_t(ecs_id_t id) : id(id) {}
-  const ecs_id_t id;
-  virtual void render(ecs_manager_t &man) = 0;
+enum {
+  ecs_id_invalid = ~0u
 };
 
 template <typename type_t>
@@ -115,16 +99,26 @@ struct ecs_manager_t {
     }
   }
 
+#if 0
+  // define ecs stores like this
   ecs_store_t<ecs_pos_t> pos;
   ecs_store_t<ecs_name_t> name;
   ecs_store_t<ecs_think_t> think;
   ecs_store_t<ecs_render_t> render;
+#endif
 
+#if 0
+  // collect from them like this
   virtual void gc_collect() {
     pos.collect(ref_count);
     name.collect(ref_count);
-    think.collect(ref_count);
-    render.collect(ref_count);
+    ...
+  }
+#endif
+
+  // return the ref list for garbage collection purposes
+  const std::unordered_map<ecs_id_t, int32_t> refs() const {
+    return ref_count;
   }
 
 protected:

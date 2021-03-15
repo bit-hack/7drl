@@ -8,14 +8,14 @@
 
 namespace game {
 
-struct game_7drl_t;
+struct game_t;
 struct entity_t;
 
 struct map_generator_t {
 
   static const uint32_t num_colours = 3;
 
-  map_generator_t(game::game_7drl_t &game)
+  map_generator_t(game::game_t &game)
     : game(game)
     , level(0)
   {
@@ -45,7 +45,7 @@ struct map_generator_t {
   int32_t level;
   uint64_t seed;
 
-  game_7drl_t &game;
+  game_t &game;
 };
 
 }  // namespace game

@@ -4,7 +4,7 @@
 
 namespace game {
 
-ent_enemy_t::ent_enemy_t(uint32_t type, game::game_7drl_t &game)
+ent_enemy_t::ent_enemy_t(uint32_t type, game::game_t &game)
   : entity_actor_t(type, game)
   , seed(game.random())
 {
@@ -136,7 +136,7 @@ void entity_equip_t::render() {
   }
 }
 
-ent_mimic_t::ent_mimic_t(game::game_7drl_t &game)
+ent_mimic_t::ent_mimic_t(game::game_t &game)
   : ent_enemy_t(TYPE, game)
   , trigger(false)
 {
@@ -182,7 +182,7 @@ void ent_potion_t::use_on(entity_t *e) {
     name.c_str(), diff);
 }
 
-ent_gold_t::ent_gold_t(game::game_7drl_t &game)
+ent_gold_t::ent_gold_t(game::game_t &game)
   : entity_item_t(TYPE, game, /* can_pickup */ false)
   , seed(game.random())
 {
@@ -248,7 +248,7 @@ void entity_equip_t::picked_up(entity_t *by) {
   game.entity_remove(this);
 }
 
-ent_player_t::ent_player_t(game::game_7drl_t &game)
+ent_player_t::ent_player_t(game::game_t &game)
   : entity_actor_t(TYPE, game)
   , user_dir{ 0, 0 }
 {

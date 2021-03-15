@@ -55,7 +55,7 @@ static const char splash1[] = R"(
 )";
 
 namespace game {
-void game_7drl_t::tick_title() {
+void game_t::tick_title() {
   console->puts(splash1);
 }
 }  // namespace game
@@ -68,7 +68,7 @@ int main(int argc, char *args[]) {
 
   FreeConsole();
 
-  game::game_7drl_t game;
+  game::game_t game;
   game.set_seed(SDL_GetTicks());
   game.create_player();
   program_t prog{ game };

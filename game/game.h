@@ -38,9 +38,9 @@ struct input_event_t {
   librl::int2 mouse_pos;
 };
 
-struct game_7drl_t {
+struct game_t {
 
-  game_7drl_t();
+  game_t();
 
   void create_player();
   bool is_player_turn() const;

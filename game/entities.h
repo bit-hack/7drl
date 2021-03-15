@@ -12,7 +12,7 @@
 
 namespace game {
 
-struct game_7drl_t;
+struct game_t;
 
 enum subclass_t {
   ent_subclass_actor,
@@ -22,7 +22,7 @@ enum subclass_t {
 
 struct entity_t : librl::gc_base_t {
 
-  entity_t(const uint32_t type, const uint32_t subclass, game::game_7drl_t &game)
+  entity_t(const uint32_t type, const uint32_t subclass, game::game_t &game)
     : pos(librl::int2{ -1, -1 })
     , type(type)
     , subclass(subclass)
@@ -61,7 +61,7 @@ struct entity_t : librl::gc_base_t {
   std::string name;
 
 protected:
-  game::game_7drl_t &game;
+  game::game_t &game;
 };
 
 struct entity_actor_t : public entity_t {
@@ -69,7 +69,7 @@ struct entity_actor_t : public entity_t {
   static const subclass_t SUBCLASS = ent_subclass_actor;
   static const uint32_t TYPE = -1;
 
-  entity_actor_t(const uint32_t type, game::game_7drl_t &game)
+  entity_actor_t(const uint32_t type, game::game_t &game)
     : entity_t(type, SUBCLASS, game)
     , hp(0)
     , hp_max(0)
@@ -99,7 +99,7 @@ struct entity_item_t : public entity_t {
   static const subclass_t SUBCLASS = ent_subclass_item;
   static const uint32_t TYPE = -1;
 
-  entity_item_t(const uint32_t type, game::game_7drl_t &game, bool can_pickup)
+  entity_item_t(const uint32_t type, game::game_t &game, bool can_pickup)
     : entity_t(type, SUBCLASS, game)
     , can_pickup(can_pickup)
   {
@@ -125,7 +125,7 @@ struct entity_equip_t : public entity_t {
   static const subclass_t SUBCLASS = ent_subclass_equip;
   static const uint32_t TYPE = -1;
 
-  entity_equip_t(const uint32_t type, game::game_7drl_t &game)
+  entity_equip_t(const uint32_t type, game::game_t &game)
     : entity_t(type, SUBCLASS, game)
     , damage(0)
     , accuracy(0)
@@ -159,7 +159,7 @@ struct ent_player_t : public entity_actor_t {
 
   static const uint32_t TYPE = ent_type_player;
 
-  ent_player_t(game_7drl_t &game);
+  ent_player_t(game_t &game);
 
   int32_t get_accuracy() const override { return entity_actor_t::get_accuracy() + 50; }
   int32_t get_damage() const   override { return entity_actor_t::get_damage() + 10; }
@@ -186,7 +186,7 @@ struct ent_player_t : public entity_actor_t {
 
 struct ent_enemy_t : public entity_actor_t {
 
-  ent_enemy_t(uint32_t type, game::game_7drl_t &game);
+  ent_enemy_t(uint32_t type, game::game_t &game);
 
   void render() override;
 
@@ -221,7 +221,7 @@ struct ent_goblin_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_goblin;
 
-  ent_goblin_t(game::game_7drl_t &game)
+  ent_goblin_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "goblin";
@@ -237,7 +237,7 @@ struct ent_vampire_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_vampire;
 
-  ent_vampire_t(game::game_7drl_t &game)
+  ent_vampire_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "vampire";
@@ -267,7 +267,7 @@ struct ent_ogre_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_ogre;
 
-  ent_ogre_t(game::game_7drl_t &game)
+  ent_ogre_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "ogre";
@@ -284,7 +284,7 @@ struct ent_wrath_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_wrath;
 
-  ent_wrath_t(game::game_7drl_t &game)
+  ent_wrath_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
     , timer(2)
   {
@@ -308,7 +308,7 @@ struct ent_dwarf_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_dwarf;
 
-  ent_dwarf_t(game::game_7drl_t &game)
+  ent_dwarf_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "dwarf";
@@ -329,7 +329,7 @@ struct ent_warlock_t : public ent_enemy_t {
 
   static const uint32_t spawn_time = 10;
 
-  ent_warlock_t(game::game_7drl_t &game)
+  ent_warlock_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
     , timer(spawn_time / 2)
   {
@@ -353,7 +353,7 @@ struct ent_skeleton_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_mimic;
 
-  ent_skeleton_t(game::game_7drl_t &game)
+  ent_skeleton_t(game::game_t &game)
     : ent_enemy_t(TYPE, game)
   {
     name = "skeleton";
@@ -370,7 +370,7 @@ struct ent_mimic_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_mimic;
 
-  ent_mimic_t(game::game_7drl_t &game);
+  ent_mimic_t(game::game_t &game);
 
   bool turn() override {
     if (trigger) {
@@ -390,7 +390,7 @@ struct ent_potion_t : public entity_item_t {
 
   static const uint32_t TYPE = ent_type_potion;
 
-  ent_potion_t(game::game_7drl_t &game)
+  ent_potion_t(game::game_t &game)
     : entity_item_t(TYPE, game, /* can_pickup */ true)
     , recovery(20)
   {
@@ -410,7 +410,7 @@ struct ent_stairs_t : public entity_item_t {
 
   static const uint32_t TYPE = ent_type_stairs;
 
-  ent_stairs_t(game::game_7drl_t &game)
+  ent_stairs_t(game::game_t &game)
     : entity_item_t(TYPE, game, /* can_pickup */ false)
     , seen(false)
   {
@@ -428,7 +428,7 @@ struct ent_gold_t : public entity_item_t {
 
   static const uint32_t TYPE = ent_type_gold;
 
-  ent_gold_t(game::game_7drl_t &game);
+  ent_gold_t(game::game_t &game);
 
   void use_on(entity_t *e);
 
@@ -439,7 +439,7 @@ struct ent_club_t : public entity_equip_t {
 
   static const uint32_t TYPE = ent_type_club;
 
-  ent_club_t(game::game_7drl_t &game)
+  ent_club_t(game::game_t &game)
     : entity_equip_t(TYPE, game)
   {
     name = "club";
@@ -452,7 +452,7 @@ struct ent_mace_t : public entity_equip_t {
 
   static const uint32_t TYPE = ent_type_mace;
 
-  ent_mace_t(game::game_7drl_t &game)
+  ent_mace_t(game::game_t &game)
     : entity_equip_t(TYPE, game)
   {
     name = "mace";
@@ -465,7 +465,7 @@ struct ent_sword_t : public entity_equip_t {
 
   static const uint32_t TYPE = ent_type_sword;
 
-  ent_sword_t(game::game_7drl_t &game)
+  ent_sword_t(game::game_t &game)
     : entity_equip_t(TYPE, game)
   {
     name = "sword";
@@ -477,7 +477,7 @@ struct ent_dagger_t : public entity_equip_t {
 
   static const uint32_t TYPE = ent_type_dagger;
 
-  ent_dagger_t(game::game_7drl_t &game)
+  ent_dagger_t(game::game_t &game)
     : entity_equip_t(TYPE, game)
   {
     name = "dagger";
@@ -490,7 +490,7 @@ struct ent_leather_armour_t : public entity_equip_t {
 
   static const uint32_t TYPE = ent_type_leather_armour;
 
-  ent_leather_armour_t(game::game_7drl_t &game)
+  ent_leather_armour_t(game::game_t &game)
     : entity_equip_t(TYPE, game)
   {
     name = "leather armour";
@@ -502,7 +502,7 @@ struct ent_shield_t : public entity_equip_t {
 
   static const uint32_t TYPE = ent_type_shield;
 
-  ent_shield_t(game::game_7drl_t &game)
+  ent_shield_t(game::game_t &game)
     : entity_equip_t(TYPE, game)
   {
     name = "shield";
@@ -515,7 +515,7 @@ struct ent_metal_armour_t : public entity_equip_t {
 
   static const uint32_t TYPE = ent_type_metal_armour;
 
-  ent_metal_armour_t(game::game_7drl_t &game)
+  ent_metal_armour_t(game::game_t &game)
     : entity_equip_t(TYPE, game)
   {
     name = "leather armour";
@@ -528,7 +528,7 @@ struct ent_cloak_t : public entity_equip_t {
 
   static const uint32_t TYPE = ent_type_cloak;
 
-  ent_cloak_t(game::game_7drl_t &game)
+  ent_cloak_t(game::game_t &game)
     : entity_equip_t(TYPE, game)
   {
     name = "cloak";

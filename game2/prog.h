@@ -4,13 +4,12 @@
 
 #include <cassert>
 
-// game
-#include "game.h"
 
+struct game_t;
 
 struct program_t {
 
-  program_t(game::game_t &game)
+  program_t(game_t &game)
     : game(game)
     , width(0)
     , height(0)
@@ -37,12 +36,10 @@ struct program_t {
 
   void render_x2();
 
-  game::game_t &game;
-
+  game_t &game;
   uint32_t width, height;
   bool active;
   uint32_t scale;
   SDL_Surface *screen;
-
   bool fullscreen;
 };
