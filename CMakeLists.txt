@@ -11,3 +11,7 @@ target_include_directories(librl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/librl)
 file(GLOB GAME_SRC game/*.cpp game/*.h)
 add_executable(game ${GAME_SRC})
 target_link_libraries(game librl ${SDL_LIBRARY})
+
+file(GLOB GAME2_SRC game2/*.cpp game2/*.h)
+add_executable(game2 ${GAME2_SRC})
+target_link_libraries(game2 librl ${SDL_LIBRARY})

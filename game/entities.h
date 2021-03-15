@@ -361,7 +361,7 @@ struct ent_skeleton_t : public ent_enemy_t {
     accuracy = 75;
     damage = 20;
     glyph = 's';
-    sense = 240;
+    sense = 230;
     colour = colour_skeleton;
   }
 };
@@ -370,17 +370,7 @@ struct ent_mimic_t : public ent_enemy_t {
 
   static const uint32_t TYPE = ent_type_mimic;
 
-  ent_mimic_t(game::game_7drl_t &game)
-    : ent_enemy_t(TYPE, game)
-    , trigger(false)
-  {
-    name = "mimic";
-    hp = 200;
-    accuracy = 75;
-    damage = 15;
-    glyph = '?';
-    colour = colour_item;
-  }
+  ent_mimic_t(game::game_7drl_t &game);
 
   bool turn() override {
     if (trigger) {

@@ -16,7 +16,7 @@ struct console_t {
   {
     window_reset();
     chars.clear(' ');
-    attrib.clear(0x33f080);
+    attrib.clear(0xFF00FF);
   }
 
   void render(uint32_t *dst, uint32_t pitch, uint32_t chars_x,

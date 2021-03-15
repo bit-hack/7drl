@@ -9,7 +9,7 @@ bool program_t::init(uint32_t w, uint32_t h, uint32_t s) {
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
     return false;
   }
-  screen = SDL_SetVideoMode(w * s, h * s, 32, 0);
+  screen = SDL_SetVideoMode(w * s, h * s, 32, fullscreen ? SDL_FULLSCREEN : 0);
   if (!screen) {
     return false;
   }
@@ -26,19 +26,32 @@ bool program_t::init(uint32_t w, uint32_t h, uint32_t s) {
   return true;
 }
 
+void program_t::toggle_fullscreen() {
+  if (screen) {
+    SDL_FreeSurface(screen);
+    screen = nullptr;
+  }
+  // toggle fullscreen mode
+  fullscreen = !fullscreen;
+  screen = SDL_SetVideoMode(width * scale, height *scale, 32, fullscreen ? SDL_FULLSCREEN : 0);
+  SDL_WM_SetCaption("TinyRL", nullptr);
+  SDL_EnableKeyRepeat(100, 100);
+}
+
 void program_t::on_event(const SDL_Event &event) {
 
   switch (event.type) {
   case SDL_QUIT:
     active = false;
     break;
-    //    case SDL_KEYUP:
   case SDL_KEYDOWN:
 
     switch (event.key.keysym.sym) {
     case SDLK_SPACE:
-      // XXX: remove this!
-//        game.map_next();
+#ifndef NDEBUG
+      // XXX: developer tool
+      game.map_next();
+#endif
       break;
     }
     switch (event.key.keysym.sym) {
@@ -50,7 +63,13 @@ void program_t::on_event(const SDL_Event &event) {
     case SDLK_u:      game.input_event_push(game::input_event_t{ game::input_event_t::key_u }); break;
     case SDLK_d:      game.input_event_push(game::input_event_t{ game::input_event_t::key_d }); break;
     case SDLK_e:      game.input_event_push(game::input_event_t{ game::input_event_t::key_e }); break;
-    case SDLK_ESCAPE: game.input_event_push(game::input_event_t{ game::input_event_t::key_escape }); break;
+    case SDLK_ESCAPE: active = false; break;
+
+    case SDLK_RETURN:
+      if (event.key.keysym.mod == KMOD_LALT) {
+        toggle_fullscreen();
+      }
+      break;
     }
     break;
   case SDL_MOUSEBUTTONUP:
@@ -75,6 +94,9 @@ void program_t::tick() {
 }
 
 void program_t::render() {
+  if (!screen) {
+    return;
+  }
   assert(screen);
   switch (scale) {
   case 1: render_x1(); break;
@@ -84,6 +106,9 @@ void program_t::render() {
 }
 
 void program_t::render_x1() {
+  if (!screen) {
+    return;
+  }
   assert(screen);
   uint32_t *d0 = (uint32_t*)screen->pixels;
   const uint32_t pitch = width;
@@ -92,6 +117,9 @@ void program_t::render_x1() {
 }
 
 void program_t::render_x2() {
+  if (!screen) {
+    return;
+  }
   assert(screen);
   const uint32_t pitch = width * 2;
   uint32_t *d0 = (uint32_t*)screen->pixels;

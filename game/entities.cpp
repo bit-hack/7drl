@@ -136,6 +136,23 @@ void entity_equip_t::render() {
   }
 }
 
+ent_mimic_t::ent_mimic_t(game::game_7drl_t &game)
+  : ent_enemy_t(TYPE, game)
+  , trigger(false)
+{
+  name = "mimic";
+  hp = 200;
+  accuracy = 75;
+  damage = 15;
+
+  switch (game.random() % 4) {
+  case 0: glyph = '?'; colour = colour_item;   break;
+  case 1: glyph = 'p'; colour = colour_potion; break;
+  case 2: glyph = '$'; colour = colour_gold;   break;
+  case 3: glyph = '='; colour = colour_stairs; break;
+  }
+}
+
 void ent_stairs_t::use_on(entity_t *e) {
   if (e->is_type<ent_player_t>()) {
     game.message_post("%s proceeds deeper into the dungeon", e->name.c_str());

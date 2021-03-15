@@ -17,8 +17,11 @@ struct program_t {
     , active(false)
     , scale(0)
     , screen(nullptr)
+    , fullscreen(false)
   {
   }
+
+  void toggle_fullscreen();
 
   bool init(uint32_t w, uint32_t h, uint32_t s);
 
@@ -40,4 +43,6 @@ struct program_t {
   bool active;
   uint32_t scale;
   SDL_Surface *screen;
+
+  bool fullscreen;
 };
