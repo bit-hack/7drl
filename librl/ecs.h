@@ -12,6 +12,8 @@ namespace librl {
 struct ecs_manager_t;
 
 typedef uint32_t ecs_id_t;
+typedef std::unordered_map<ecs_id_t, int32_t> ecs_refs_t;
+typedef std::vector<ecs_id_t> ecs_dead_t;
 
 enum {
   ecs_id_invalid = ~0u
@@ -49,15 +51,11 @@ struct ecs_store_t {
     return map[id] = inst;
   }
 
-  void collect(const std::unordered_map<ecs_id_t, int32_t> &refs) {
-    auto itt = map.begin();
-    while (itt != map.end()) {
-      if (refs.count(itt->first)) {
-        itt = std::next(itt);
-      }
-      else {
-        delete itt->second;
-        itt = map.erase(itt);
+  void collect(const std::vector<ecs_id_t> &ids) {
+    for (const ecs_id_t i : ids) {
+      auto itt = map.find(i);
+      if (itt != map.end()) {
+        map.erase(itt);
       }
     }
   }
@@ -90,39 +88,28 @@ struct ecs_manager_t {
   }
 
   void id_release(ecs_id_t id) {
+    // note: might be decent to make id a ref so we can set it to invalid
     auto itt = ref_count.find(id);
     assert(itt != ref_count.end());
     assert(itt->second > 0);
     if (--itt->second == 0) {
+      dead.push_back(itt->first);
       // remove from the ref_count list
       ref_count.erase(itt);
     }
   }
 
-#if 0
-  // define ecs stores like this
-  ecs_store_t<ecs_pos_t> pos;
-  ecs_store_t<ecs_name_t> name;
-  ecs_store_t<ecs_think_t> think;
-  ecs_store_t<ecs_render_t> render;
-#endif
-
-#if 0
-  // collect from them like this
-  virtual void gc_collect() {
-    pos.collect(ref_count);
-    name.collect(ref_count);
-    ...
+  const ecs_dead_t &dead_get() const {
+    return dead;
   }
-#endif
 
-  // return the ref list for garbage collection purposes
-  const std::unordered_map<ecs_id_t, int32_t> refs() const {
-    return ref_count;
+  void dead_clear() {
+    dead.clear();
   }
 
 protected:
-  std::unordered_map<ecs_id_t, int32_t> ref_count;
+  ecs_refs_t ref_count;
+  ecs_dead_t dead;
 
   ecs_id_t id_next;
 };

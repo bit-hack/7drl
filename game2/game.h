@@ -33,7 +33,11 @@ struct com_render_t  {
 };
 
 struct com_input_t {
-  void recv(librl::ecs_id_t id, game_t &game, const input_event_t &event);
+  void handle(librl::ecs_id_t id, game_t &game, const input_event_t &event);
+};
+
+struct com_think_t {
+  void think(librl::ecs_id_t id, game_t &game);
 };
 
 struct game_t {
@@ -42,13 +46,9 @@ struct game_t {
     : player(librl::ecs_id_invalid) {
   }
 
-  void player_create() {
-    player = ecs.id_new();
-    com_info_t *i = com_info.insert(player, new com_info_t);
-    com_render_t *r = com_render.insert(player, new com_render_t);
-    i->pos = librl::int2{ 0, 0 };
-    r->glyph = '@';
-  }
+  void player_create();
+
+  void enemy_create();
 
   void console_create(uint32_t w, uint32_t h) {
     _console.reset(new librl::console_t{ w, h });
@@ -60,15 +60,21 @@ struct game_t {
     return *_console;
   }
 
+  void tick();
+
+  // entity componant system
   librl::ecs_manager_t ecs;
   librl::ecs_store_t<com_info_t> com_info;
   librl::ecs_store_t<com_render_t> com_render;
   librl::ecs_store_t<com_input_t> com_input;
+  librl::ecs_store_t<com_think_t> com_think;
 
-  void tick();
+  librl::ecs_id_t enemy;
+  librl::ecs_id_t player;
 
 protected:
-  librl::ecs_id_t player;
+
+  void _collect();
 
   std::unique_ptr<librl::console_t> _console;
 };

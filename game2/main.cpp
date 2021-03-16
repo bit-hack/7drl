@@ -25,6 +25,7 @@ int main(int argc, char *args[]) {
   }
 
   game.player_create();
+  game.enemy_create();
 
   while (prog.active) {
     game.tick();
